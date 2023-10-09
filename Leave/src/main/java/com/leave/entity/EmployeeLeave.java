@@ -1,12 +1,16 @@
 package com.leave.entity;
 
+import java.sql.Blob;
 import java.time.LocalDate;
+
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.annotation.Generated;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import lombok.Data;
 
 @Entity
@@ -16,7 +20,11 @@ public class EmployeeLeave {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private LocalDate leaveDate;
 	private Long employeeId;
+	private LocalDate fromDate;
+	private LocalDate toDate;
 	private String reason;
+	private Long appliedBy;
+	private static String status="Pending";
+	
 }

@@ -12,9 +12,14 @@ public class EmployeeMicroservices {
 	    @Id
 	    @GeneratedValue(strategy = GenerationType.IDENTITY)
 	    private Long id;
+	    private Long employeeId;
 	    private String name;
 	    private String mobile;
 	    private String designation;
 	    private String password;
+	    private String email;
+	    private String startDate;
+	    private String endDate;
+	    private String skill;
 	    private Long ManagerId;
 }

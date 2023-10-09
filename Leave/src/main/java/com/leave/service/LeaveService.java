@@ -14,7 +14,6 @@ public class LeaveService {
 	private LeaveRepository repo;
 	public EmployeeLeave AddLeave(UserLeaveRequest request) {
 		EmployeeLeave leave=new EmployeeLeave();
-		leave.setLeaveDate(request.getLeaveDate());
 		leave.setEmployeeId(request.getEmployeeId());
 		leave.setReason(request.getReason());
 		

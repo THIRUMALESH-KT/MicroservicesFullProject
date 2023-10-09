@@ -7,8 +7,9 @@ import lombok.Data;
 @Data
 public class UserLeaveRequest {
 
-	private LocalDate leaveDate;
+	private Long id;
 	private Long employeeId;
+	private LocalDate fromDate;
+	private LocalDate toDate;
 	private String reason;
-	
 }

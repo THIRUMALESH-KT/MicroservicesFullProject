@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.manager.entity.Manager;
 import com.manager.repository.ManagerRepository;
+import com.manager.userRequest.MangerUserRequest;
 
 @Service
 public class ManagerService {
@@ -23,11 +24,9 @@ public class ManagerService {
 		return "Employee Sucefully Deleted : "+id;
 	}
 
-	public Manager UpdateById(Long id, Manager Manager) throws Exception {
+	public Manager UpdateById(Long id, MangerUserRequest Manager) throws Exception {
 		Manager Manager1=GetById(id);
-		Manager1.setDesignaion(Manager.getDesignaion());
-		Manager1.setMobile(Manager.getMobile());
-		Manager1.setName(Manager.getPassword());
+		
 		
 		return employeeRepository.save(Manager1);
 	}
@@ -37,7 +36,7 @@ public class ManagerService {
 		return Manager1;
 	}
 
-	public Object Insert(Manager employe) throws Exception {
+	public Object Insert(MangerUserRequest employe) throws Exception {
 		Manager Manager1=employeeRepository.findByName(employe.getName());
 		if(Manager1!=null) 
 			throw new Exception("(Dublicate Employee) Employee already registred with this employee name : "+employe.getName());

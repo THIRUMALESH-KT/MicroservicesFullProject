@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.manager.entity.Manager;
 import com.manager.service.ManagerService;
+import com.manager.userRequest.MangerUserRequest;
 
 @RestController
 @RequestMapping("/manager")
@@ -39,7 +40,7 @@ public class ManagerController {
 	//insert Employe into data base
 	
 	@PostMapping("/insert")
-	public Object Insert(@RequestBody Manager Manager) throws Exception{
+	public Object Insert(@RequestBody MangerUserRequest Manager) throws Exception{
 
 		 
 		return employeeService.Insert(Manager);
@@ -57,7 +58,7 @@ public class ManagerController {
 	//Update By Id
 	
 	@PutMapping("/update")
-	public Object updateById(@RequestParam Long id,@RequestBody Manager Manager) throws Exception{
+	public Object updateById(@RequestParam Long id,@RequestBody MangerUserRequest Manager) throws Exception{
 		return employeeService.UpdateById(id,Manager);
 	}
 	
