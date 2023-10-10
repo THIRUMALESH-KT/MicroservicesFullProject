@@ -40,58 +40,59 @@ public class EmployeController {
 	@GetMapping("/getAllEmployes")
 	public Object GetAllEmployes() throws Exception{
 		log.info("inside getAllEmployes EmployeController");
-		Map<String,Object> map=new HashMap<>();
-		map.put(" Result  : ", " Sucess ");
-		map.put(" Message  : ", employeeService.GetAllEmployes() );
-		map.put(" Status : ", HttpStatus.OK.value());
-		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
+//		Map<String,Object> map=new HashMap<>();
+//		map.put(" Result  : ", " Sucess ");
+//		map.put(" Message  : ", employeeService.GetAllEmployes() );
+//		map.put(" Status : ", HttpStatus.OK.value());
+//		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
+		return "getAllEmployes working EmployeeController";
 	}
 	
 	
 	//insert Employe into data base
 	
 	@PostMapping("/insert")
-	public Object Insert(@RequestBody EmployeeMicroservices employe) throws Exception{
-		Map<String,Object> map=new HashMap<>();
-		String getbyIdurl=managerBaseUrl+"/getById/"+employe.getManagerId();
-		Object object=restTemplate.getForObject(getbyIdurl, Object.class);
-		System.out.println(object.toString());
-	//    Object emp	=employeeService.Insert(employe);
-		Object emp=null;
-	    System.out.println(emp.toString());
-	    emp.toString();
-		map.put(" Result  : ", " Sucess ");
-		map.put(" Message  : ", emp );
-		map.put(" Status : ", HttpStatus.OK.value());
-		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
+	public Object Insert(@RequestBody(required = false) EmployeeMicroservices employe) throws Exception{
+//		Map<String,Object> map=new HashMap<>();
+//		String getbyIdurl=managerBaseUrl+"/getById/"+employe.getManagerId();
+//		Object object=restTemplate.getForObject(getbyIdurl, Object.class);
+//		System.out.println(object.toString());
+//	//    Object emp	=employeeService.Insert(employe);
+//		Object emp=null;
+//	    System.out.println(emp.toString());
+//	    emp.toString();
+//		map.put(" Result  : ", " Sucess ");
+//		map.put(" Message  : ", emp );
+//		map.put(" Status : ", HttpStatus.OK.value());
+//		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
+		return "employee inser working EmployeeController";
 	}
 	
 	
 	//Get By Employe ID
 	
 	@GetMapping("/getById/{id}")
-	public Object getById(@PathVariable Long id) throws Exception{
-		return employeeService.GetById(id);
+	public Object getById(@PathVariable(required = false) Long id) throws Exception{
+//		return employeeService.GetById(id);
+		return "getBYId working EmployeeController";
 	}
 	
 	//Update By Id
 	
 	@PutMapping("/update")
-	public  Object updateById(@RequestParam Long id,@RequestBody EmployeeMicroservices employee) throws Exception{
-		return employeeService.UpdateById(id,employee);
+	public  Object updateById(@RequestParam(required = false) Long id,@RequestBody(required = false) EmployeeMicroservices employee) throws Exception{
+//		return employeeService.UpdateById(id,employee);
+		return "updateBYId working EmployeeController";
 	}
 	
 	//Delete By Id
 	@DeleteMapping("/deleteById")
-	public  Object deleteById(@RequestParam Long id) throws Exception{
-		return employeeService.DeleteById(id);
+	public  Object deleteById(@RequestParam(required = false) Long id) throws Exception{
+//		return employeeService.DeleteById(id);
+		return "deleteByid working EmployeeController";
 	}
-//	@PutMapping("/takeLeave")
-//	public ResponseEntity<Map<String , Object>> TakeLeave(@RequestBody UserLeaveRequest object){
-//		Map<String,Object> map=new HashMap<>();
-//		map.put(" Result  : ", " Sucess ");
-//		map.put(" Message  : ", employeeService.TakeLeave(object) );
-//		map.put(" Status : ", HttpStatus.OK.value());
-//		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
-//	}
+	@GetMapping("/loadUserDetails/id")
+	public Object LoadUserDetails(@PathVariable Long id) throws Exception {
+		return employeeService.LoadUserDetails(id);
+	}
 }

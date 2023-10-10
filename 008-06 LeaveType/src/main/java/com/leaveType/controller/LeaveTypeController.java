@@ -25,12 +25,14 @@ public class LeaveTypeController {
 	private LeaveTypeService leaveTypeService;
 	@GetMapping("/addLeaveType")
 	public ResponseEntity<Map<String, Object>> CreateLeaveType(@RequestBody LeaveTypeUserRequest leaveTypeUserRequest){
-		log.info("inside CreateLeaveType LeaveTypeController");
+//		log.info("inside CreateLeaveType LeaveTypeController");
 		Map<String, Object> map	=new HashMap<>();
-		map.put("result", leaveTypeService.CreateLeaveType(leaveTypeUserRequest));
-		map.put("status", HttpStatus.OK	);
-		map.put("code", HttpStatus.OK.value());
-		
+//		map.put("result", leaveTypeService.CreateLeaveType(leaveTypeUserRequest));
+//		map.put("status", HttpStatus.OK	);
+//		map.put("code", HttpStatus.OK.value());
+//		
+//		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
+		map.put("message", "addLeaveType working");
 		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
 		
 	}

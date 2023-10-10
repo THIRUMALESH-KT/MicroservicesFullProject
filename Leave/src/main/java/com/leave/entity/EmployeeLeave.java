@@ -24,14 +24,14 @@ public class EmployeeLeave {
 	private String code;
 	private LocalDate fromDate;
 	private LocalDate toDate;
+	private String reason;
+	private Long appliedBy;
+	private static String status="Pending";
+	
 	public static String getStatus() {
 		return status;
 	}
 	public static void setStatus(String status) {
 		EmployeeLeave.status = status;
 	}
-	private String reason;
-	private Long appliedBy;
-	private static String status="Pending";
-	
 }

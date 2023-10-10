@@ -32,39 +32,44 @@ public class ManagerController {
 	//Retrive All Employes
 	
 	@GetMapping("/getAllEmployes")
-	public Object GetAllEmployes() throws Exception{
-		return 	employeeService.GetAllEmployes()  ;
+	public Object GetAllManagers() throws Exception{
+//		return 	employeeService.GetAllEmployes()  ;
+		return "getAllManagers working ManagerController";
 	}
 	
 	
 	//insert Employe into data base
 	
 	@PostMapping("/insert")
-	public Object Insert(@RequestBody MangerUserRequest Manager) throws Exception{
+	public Object Insert(@RequestBody(required = false) MangerUserRequest Manager) throws Exception{
 
 		 
-		return employeeService.Insert(Manager);
+//		return employeeService.Insert(Manager);
+		return "inser working ManagerController";
 	}
 	
 	
 	//Get By Employe ID
 	
 	@GetMapping("/getById/{id}")
-	public Object getById(@PathVariable Long id) throws Exception{
+	public Object getById(@PathVariable(required = false) Long id) throws Exception{
 	
-		return employeeService.GetById(id);
+//		return employeeService.GetById(id);
+		return "getBy id working ManagerController";
 	}
 	
 	//Update By Id
 	
 	@PutMapping("/update")
-	public Object updateById(@RequestParam Long id,@RequestBody MangerUserRequest Manager) throws Exception{
-		return employeeService.UpdateById(id,Manager);
+	public Object updateById(@RequestParam(required = false) Long id,@RequestBody(required = false) MangerUserRequest Manager) throws Exception{
+//		return employeeService.UpdateById(id,Manager);
+		return "updateById working ManagerController";
 	}
 	
 	//Delete By Id
 	@DeleteMapping("/deleteById")
-	public Object deleteById(@RequestParam Long id) throws Exception{
-		return employeeService.DeleteById(id);
+	public Object deleteById(@RequestParam(required = false) Long id) throws Exception{
+//		return employeeService.DeleteById(id);
+		return "deleteById working ManagerController";
 	}
 }
