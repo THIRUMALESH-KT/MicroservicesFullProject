@@ -21,7 +21,7 @@ public class LeaveController {
 	@Autowired
 	private LeaveService leaveService;
 	
-	@PutMapping("/addLeave")
+	@PutMapping("/applyLeave")
 	public Object AddLeave(@RequestBody UserLeaveRequest object){
 		
 		return leaveService.AddLeave(object);

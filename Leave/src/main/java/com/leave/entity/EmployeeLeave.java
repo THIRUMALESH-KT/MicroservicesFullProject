@@ -21,8 +21,15 @@ public class EmployeeLeave {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private Long employeeId;
+	private String code;
 	private LocalDate fromDate;
 	private LocalDate toDate;
+	public static String getStatus() {
+		return status;
+	}
+	public static void setStatus(String status) {
+		EmployeeLeave.status = status;
+	}
 	private String reason;
 	private Long appliedBy;
 	private static String status="Pending";

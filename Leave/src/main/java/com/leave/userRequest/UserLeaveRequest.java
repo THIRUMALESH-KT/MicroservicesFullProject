@@ -8,7 +8,7 @@ import lombok.Data;
 public class UserLeaveRequest {
 
 	private Long id;
-	private Long employeeId;
+	private String code;
 	private LocalDate fromDate;
 	private LocalDate toDate;
 	private String reason;
