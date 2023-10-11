@@ -50,17 +50,6 @@ public class EmployeService {
 		return null;
 	}
 
-	public Object LoadUserDetails(Long id) throws Exception {
-
-
-		EmployeeMicroservices empdetails=employeeRepository.findByEmployeeId(id);
-		UserDetails userDetails=new UserDetails();
-		userDetails.setEmployeeId(empdetails.getId());
-		userDetails.setPassword(empdetails.getPassword());
-		userDetails.setAccessCode(empdetails.getAccesCode());
-	
-		return userDetails;
-	}
 
 
 

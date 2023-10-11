@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import com.employe.UserResponse.UserResponse;
 import com.employe.entity.EmployeeMicroservices;
 import com.employe.service.EmployeService;
 import com.employe.userRequest.UserLeaveRequest;
@@ -72,7 +73,7 @@ public class EmployeController {
 	//Get By Employe ID
 	
 	@GetMapping("/getById/{id}")
-	public Object getById(@PathVariable(required = false) Long id) throws Exception{
+	public String getById(@PathVariable(required = false) Long id) throws Exception{
 //		return employeeService.GetById(id);
 		return "getBYId working EmployeeController";
 	}
@@ -91,8 +92,7 @@ public class EmployeController {
 //		return employeeService.DeleteById(id);
 		return "deleteByid working EmployeeController";
 	}
-	@GetMapping("/loadUserDetails/id")
-	public Object LoadUserDetails(@PathVariable Long id) throws Exception {
-		return employeeService.LoadUserDetails(id);
-	}
+	
+
+	
 }
