@@ -1,20 +1,16 @@
-package com.manager.userRequest;
-
-import java.time.LocalDate;
+package com.auth.userRequest;
 
 import lombok.Data;
-
 @Data
-public class MangerUserRequest {
-	
+public class employeeUserRequest {
 	private Long   employeeId;
-	private Long managerId;
     private String accesCode;
     private String name;
     private String mobile;
     private String designation;
     private String password;
     private String email;
-    private LocalDate startDate;
+    private String startDate;
     private String skill;
+    private Long   managerId;
 }

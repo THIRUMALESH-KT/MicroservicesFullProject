@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,6 +23,7 @@ import com.employe.UserResponse.UserResponse;
 import com.employe.entity.EmployeeMicroservices;
 import com.employe.service.EmployeService;
 import com.employe.userRequest.UserLeaveRequest;
+import com.employe.userRequest.employeeUserRequest;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,51 +32,41 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EmployeController {
 
-	private static final String managerBaseUrl="http://MANAGER-SERVICE/manager";
 	@Autowired
 	private EmployeService employeeService;
 	
-	@Autowired
-	private RestTemplate restTemplate;
-	//Retrive All Employes
+	
+	
+	@GetMapping("/welcome")
+	public String welcome() {
+		log.info("******inside welcome EmployeeController");
+		return "This is welcome page";
+	}
+	@PostMapping("/insert")
+	public ResponseEntity<Map<String, Object>> Insert(@RequestBody employeeUserRequest employe) throws Exception{
+		Map<String, Object> map=new HashMap<>();
+		map.put("result", employeeService.Insert(employe));
+		map.put("status", HttpStatus.OK);
+		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
+	//	return employeeService.Insert(employe);
+	}
 	
 	@GetMapping("/getAllEmployes")
 	public Object GetAllEmployes() throws Exception{
 		log.info("inside getAllEmployes EmployeController");
-//		Map<String,Object> map=new HashMap<>();
-//		map.put(" Result  : ", " Sucess ");
-//		map.put(" Message  : ", employeeService.GetAllEmployes() );
-//		map.put(" Status : ", HttpStatus.OK.value());
-//		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
+
 		return "getAllEmployes working EmployeeController";
 	}
 	
 	
 	//insert Employe into data base
 	
-	@PostMapping("/insert")
-	public Object Insert(@RequestBody(required = false) EmployeeMicroservices employe) throws Exception{
-//		Map<String,Object> map=new HashMap<>();
-//		String getbyIdurl=managerBaseUrl+"/getById/"+employe.getManagerId();
-//		Object object=restTemplate.getForObject(getbyIdurl, Object.class);
-//		System.out.println(object.toString());
-//	//    Object emp	=employeeService.Insert(employe);
-//		Object emp=null;
-//	    System.out.println(emp.toString());
-//	    emp.toString();
-//		map.put(" Result  : ", " Sucess ");
-//		map.put(" Message  : ", emp );
-//		map.put(" Status : ", HttpStatus.OK.value());
-//		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
-		return "employee inser working EmployeeController";
-	}
 	
 	
 	//Get By Employe ID
 	
 	@GetMapping("/getById/{id}")
 	public String getById(@PathVariable(required = false) Long id) throws Exception{
-//		return employeeService.GetById(id);
 		return "getBYId working EmployeeController";
 	}
 	
@@ -82,14 +74,12 @@ public class EmployeController {
 	
 	@PutMapping("/update")
 	public  Object updateById(@RequestParam(required = false) Long id,@RequestBody(required = false) EmployeeMicroservices employee) throws Exception{
-//		return employeeService.UpdateById(id,employee);
 		return "updateBYId working EmployeeController";
 	}
 	
 	//Delete By Id
 	@DeleteMapping("/deleteById")
 	public  Object deleteById(@RequestParam(required = false) Long id) throws Exception{
-//		return employeeService.DeleteById(id);
 		return "deleteByid working EmployeeController";
 	}
 	

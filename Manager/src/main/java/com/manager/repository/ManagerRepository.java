@@ -7,6 +7,7 @@ import com.manager.entity.Manager;
 @Repository
 public interface ManagerRepository extends JpaRepository<Manager, Long> {
 
-	Manager findByName(String name);
+
+	Manager findByManagerId(Long employeeId);
 
 }

@@ -21,12 +21,15 @@ import com.manager.entity.Manager;
 import com.manager.service.ManagerService;
 import com.manager.userRequest.MangerUserRequest;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestController
 @RequestMapping("/manager")
+@Slf4j
 public class ManagerController {
 
 	@Autowired
-	private ManagerService employeeService;
+	private ManagerService managerService;
 	
 	
 	//Retrive All Employes
@@ -42,20 +45,18 @@ public class ManagerController {
 	
 	@PostMapping("/insert")
 	public Object Insert(@RequestBody(required = false) MangerUserRequest Manager) throws Exception{
-
+		log.info("inside insert ManagerController");
 		 
-//		return employeeService.Insert(Manager);
-		return "inser working ManagerController";
+		return managerService.Insert(Manager);
 	}
 	
 	
 	//Get By Employe ID
 	
 	@GetMapping("/getById/{id}")
-	public Object getById(@PathVariable(required = false) Long id) throws Exception{
-	
-//		return employeeService.GetById(id);
-		return "getBy id working ManagerController";
+	public ResponseEntity<Manager> getById(@PathVariable Long id) throws Exception{
+	log.info("inside getById ManagerController");
+		return new ResponseEntity<Manager>(managerService.GetById(id),HttpStatus.OK);
 	}
 	
 	//Update By Id
@@ -71,5 +72,11 @@ public class ManagerController {
 	public Object deleteById(@RequestParam(required = false) Long id) throws Exception{
 //		return employeeService.DeleteById(id);
 		return "deleteById working ManagerController";
+	}
+	@PutMapping("/addEmployeeId")
+	public void AddEMployeeId(@RequestBody MangerUserRequest requset) throws Exception {
+		log.info("inside AddEMployeeId ManagerController");
+
+		managerService.AddEmployeeId(requset);
 	}
 }
