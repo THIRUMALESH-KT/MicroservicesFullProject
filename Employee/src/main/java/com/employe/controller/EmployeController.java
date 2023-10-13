@@ -66,8 +66,9 @@ public class EmployeController {
 	//Get By Employe ID
 	
 	@GetMapping("/getById/{id}")
-	public String getById(@PathVariable(required = false) Long id) throws Exception{
-		return "getBYId working EmployeeController";
+	public EmployeeMicroservices getById(@PathVariable(required = false) Long id) throws Exception{
+		log.info("********inside getById employeeController");
+		return employeeService.GetById(id);
 	}
 	
 	//Update By Id
@@ -83,6 +84,10 @@ public class EmployeController {
 		return "deleteByid working EmployeeController";
 	}
 	
-
+	@GetMapping("/getHr")
+	public EmployeeMicroservices getHr() throws Exception{
+		log.info("***********inside getHr EmployeeController");
+		return employeeService.getHr();
+	}
 	
 }

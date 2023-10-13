@@ -4,7 +4,9 @@ package com.manager.entity;
 import java.time.LocalDate;
 import java.util.List;
 
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,8 +24,12 @@ public class Manager {
 	    private Long id;
 	    private String name;
 	    private Long managerId;
+	    private String accesCode;
+	    @ElementCollection(fetch = FetchType.EAGER)
 	    private List<Long> employeesIds;
 	    private String designation;
+	    private String password;
+	    private String email;
 	    private String skill;
 	    private LocalDate startDate;
 	    private LocalDate endDate;

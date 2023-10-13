@@ -48,7 +48,7 @@ public class ManagerService {
 		if(manager1!=null) 
 			throw new Exception("(Dublicate Employee) Employee already registred with this employee name : "+employe.getName());
 		
-		manager1=new Manager(null, employe.getName(), employe.getEmployeeId(), null, employe.getDesignation(), employe.getSkill(), employe.getStartDate(), null, null, null);
+		manager1=new Manager(null, employe.getName(), employe.getEmployeeId(), employe.getAccesCode(), null, employe.getDesignation(), employe.getPassword(),employe.getEmail(), employe.getSkill(), employe.getStartDate(), null, null, null);
 		
 		return managerRepository.save(manager1);
 	}

@@ -43,7 +43,9 @@ public class EmployeService {
 	}
 
 	public EmployeeMicroservices GetById(Long id) throws Exception {
-		return null;
+		EmployeeMicroservices employee=employeeRepository.getByEmployeeId(id);
+		if(employee==null)throw new Exception("Employee id not Found");
+		return  employee;
 	}
 
 	public Object Insert(employeeUserRequest employe) throws Exception {
@@ -61,12 +63,12 @@ public class EmployeService {
 			if (ob.getBody() != null) {
 				employeeRepository.save(employeeMicroservices);
 
-				// restTemplate.exchange(managerBaseUrl+"/addEmployeeId", HttpMethod.PUT,new
-				// HttpEntity<employeeUserRequest>(employe), Void.class);
+				 restTemplate.exchange(managerBaseUrl+"/addEmployeeId", HttpMethod.PUT,new
+				 HttpEntity<employeeUserRequest>(employe), Void.class);
 				return "Employee Saved ";
 			} else {
 				log.error("********giver Manager id not found");
-				throw new Exception("id not Found");
+				throw new Exception("Manager Id not Found");
 				// return new ResponseEntity<Object>("Manager id not Found
 				// ",HttpStatus.BAD_REQUEST);
 			}
@@ -81,6 +83,13 @@ public class EmployeService {
 
 	public Object GetAllEmployes() throws Exception {
 
+		return null;
+	}
+
+	public EmployeeMicroservices getHr() throws Exception {
+		log.info("************inside getHr EmployeeService");
+		EmployeeMicroservices hr=employeeRepository.findByDesignation("HR");
+		if(hr==null)throw new Exception("Hr not Found");
 		return null;
 	}
 

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.auth.service.AuthService;
+import com.auth.userRequest.LoginRequest;
 import com.auth.userRequest.employeeUserRequest;
 
 import lombok.extern.slf4j.Slf4j;
@@ -36,5 +37,10 @@ public class AuthController {
 	public ResponseEntity<Object> addEmployee(@RequestBody employeeUserRequest employe) {
 		log.info("*******inside addEmployee AuthController");
 		return new ResponseEntity<Object>(authService.addEmployee(employe),HttpStatus.OK);
+	}
+	@GetMapping("/login")
+	public ResponseEntity<String> login(@RequestBody LoginRequest request)throws Exception{
+		log.info("inside login AuthController");
+		return new ResponseEntity<String>(authService.Login(request),HttpStatus.OK);
 	}
 }

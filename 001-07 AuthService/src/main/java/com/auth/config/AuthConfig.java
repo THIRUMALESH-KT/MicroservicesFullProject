@@ -4,6 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,9 +24,13 @@ public class AuthConfig {
 				csrf.disable())
 				.authorizeHttpRequests(authorizweRequests->
 				authorizweRequests
-				.requestMatchers("/auth/welcome","/auth/hello","/auth/addEmployee")
+				.requestMatchers("/auth/welcome","/auth/hello","/auth/addEmployee","/auth/applyLeave","auth/login")
 				.permitAll()
 				)
 				.build();
+	}
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
 	}
 }

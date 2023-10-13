@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background-color: #f4f4f4;
+			margin: 0;
+			padding: 0;
+		}
+
+		.container {
+			background-color: #ffffff;
+			max-width: 600px;
+			margin: 0 auto;
+			padding: 20px;
+			border-radius: 5px;
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+		}
+
+		h1 {
+			font-size: 24px;
+			text-align: center;
+			color: #333;
+		}
+
+		p {
+			margin: 0 0 20px 0;
+			color: #333;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<h1>Leave Request</h1>
+		<p>
+			Dear <span th:text="${Manager}"></span>,
+		</p>
+		<p>
+			I am writing to request <span th:text="${numberOfDays}"> days of leave from <span
+					th:text="${leaveFromDate}"></span> to <span th:text="${leaveEndDate}"></span>.<span
+					th:text="${Employee}"></span> will be unavailable during this period due to <span
+					th:text="${reason}"></span> .
+		</p>
+		<p>
+			<span th:text="${Employee}"></span> requests approval for this leave. Please consider and approve this
+			request at your earliest convenience.
+		</p>
+		<p>
+			Thank you for your prompt attention to this matter.
+		</p>
+		<p>
+			Sincerely,
+			<span th:text="${Employee}"></span>
+		</p>
+	</div>
+</body>
+
+</html>

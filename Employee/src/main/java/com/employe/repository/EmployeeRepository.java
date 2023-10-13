@@ -11,4 +11,8 @@ public interface EmployeeRepository extends JpaRepository<EmployeeMicroservices,
 
 	EmployeeMicroservices findByEmployeeId(Long id);
 
+	EmployeeMicroservices getByEmployeeId(Long id);
+
+	EmployeeMicroservices findByDesignation(String string);
+
 }
