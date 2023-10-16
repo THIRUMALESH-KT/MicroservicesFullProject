@@ -40,6 +40,7 @@ public class ManagerService {
 	public Manager GetById(Long id) throws Exception {
 		log.info("inside getBYId ManagerService");
 		Manager manager1=managerRepository.findByManagerId(id);
+		if(manager1==null)throw new Exception("Manger id not found");
 		return manager1;
 	}
 

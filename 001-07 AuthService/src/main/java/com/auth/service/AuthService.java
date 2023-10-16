@@ -25,6 +25,8 @@ public class AuthService {
 	private RestTemplate restTemplate;
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	@Autowired
+	private JwtService jwtService;
 	public String welcome() {
 		log.info("*********inside welcome AuthService");
 		return restTemplate.getForObject(employeeBasePath+"/welcome",String.class);
@@ -43,7 +45,7 @@ public class AuthService {
 		if(employee==null) {
 			throw new Exception("Invalid User Details");
 		}
-		return "valid User Details";
+		return jwtService.generteToken(String.valueOf(request.getId()));
 	}
 
 }

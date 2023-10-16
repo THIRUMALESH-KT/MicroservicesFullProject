@@ -1,6 +1,7 @@
 package com.employe.controller;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,12 +18,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
-import com.employe.UserResponse.UserResponse;
 import com.employe.entity.EmployeeMicroservices;
 import com.employe.service.EmployeService;
-import com.employe.userRequest.UserLeaveRequest;
 import com.employe.userRequest.employeeUserRequest;
 
 import lombok.extern.slf4j.Slf4j;
@@ -52,10 +50,14 @@ public class EmployeController {
 	}
 	
 	@GetMapping("/getAllEmployes")
-	public Object GetAllEmployes() throws Exception{
+	public ResponseEntity<Map<String, Object>> GetAllEmployes() throws Exception{
 		log.info("inside getAllEmployes EmployeController");
-
-		return "getAllEmployes working EmployeeController";
+		Map<String, Object> map=new LinkedHashMap<>();
+		map.put("Message : ", "All Employee Details Fetched Sucefullt ");
+		map.put("Result : ", employeeService.GetAllEmployes());
+		map.put("Status : ", HttpStatus.OK);
+		map.put("code : ", HttpStatus.OK.value());
+		return new ResponseEntity<>(map,HttpStatus.OK);
 	}
 	
 	

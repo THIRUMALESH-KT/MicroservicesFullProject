@@ -11,6 +11,7 @@ import javax.sql.rowset.serial.SerialException;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.annotation.Generated;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -37,13 +38,13 @@ public class EmployeeLeave {
 	private Long appliedBy;
 	@Lob
 	private Blob file;
-	private static String status="Pending";
+	private static String LeaveStatus="Pending";
 	
-	public static String getStatus() {
-		return status;
+	public static  String getStatus() {
+		return LeaveStatus;
 	}
 	public static void setStatus(String status) {
-		EmployeeLeave.status = status;
+		EmployeeLeave.LeaveStatus = status;
 	}
 	
 	public void setLeaveFile(MultipartFile file) throws SerialException, SQLException, IOException {

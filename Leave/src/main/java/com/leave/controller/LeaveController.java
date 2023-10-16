@@ -1,11 +1,13 @@
 package com.leave.controller;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -13,28 +15,56 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.leave.service.LeaveService;
 import com.leave.userRequest.UserLeaveRequest;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/leave")
 @Slf4j
+
 public class LeaveController {
 
 	@Autowired
 	private LeaveService leaveService;
 	
-	@PutMapping("/applyLeave/{id}")
-	public ResponseEntity<String> applyLeave(@RequestBody(required = false) UserLeaveRequest reqest,@RequestParam("Authorization") String tokenHeader,@PathVariable Long employeeId)throws Exception{
-		log.info("************inside ApplyLeave");
-		return new ResponseEntity<String>(leaveService.ApplyLeave(reqest,tokenHeader,employeeId),HttpStatus.OK);
+	@PutMapping("/applyLeave/{employeeId}")
+	public ResponseEntity<String> applyLeave(@RequestBody(required = false) UserLeaveRequest reqest,HttpServletRequest request ,@PathVariable Long employeeId,@RequestParam(name="file",required = false)MultipartFile file)throws Exception{
+		log.info("************inside ApplyLeave LeaveController");
+		return new ResponseEntity<String>(leaveService.ApplyLeave(reqest,request.getHeader("Authorization"),employeeId,file),HttpStatus.OK);
 	}
-	@GetMapping("/AllEmployeesLeaveData")
-	public Object AllEmployeesLeaveData() {
-		return "AllEmployees Leave Data working ";
+	@GetMapping("/allEmployeesLeaveData")
+	public ResponseEntity<Map<String, Object>> AllEmployeesLeaveData() {
+		log.info("***********inside AllEmployeesLeaveData LeaveController");
+		Map<String , Object> map=new LinkedHashMap<>();
+		map.put("Message : ", "Leave Deleted sucefully");
+		map.put("Result : ",leaveService.getAllEmployeesLeaveData());
+		map.put("Status : ", HttpStatus.OK);
+		map.put("Code : ", HttpStatus.OK.value());
+		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);	}
+	@DeleteMapping("/delete/{id}")
+	public ResponseEntity<Map<String, Object>> DeleteLeave(@PathVariable Long id) throws Exception{
+		log.info("********inside Delete Leave LeaveController");
+		Map<String , Object> map=new LinkedHashMap<>();
+		map.put("Message : ", "Leave Deleted sucefully");
+		map.put("Result : ",leaveService.DeleteLeave(id));
+		map.put("Status : ", HttpStatus.OK);
+		map.put("Code : ", HttpStatus.OK.value());
+		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);
+	}
+	@PutMapping("/approveLeave/{id}")
+	public ResponseEntity<Map<String, Object>> ApproveLeave(@PathVariable Long id){
+		log.info("**********inside ApproveLeave LeaveController");
+		Map<String , Object> map=new LinkedHashMap<>();
+		map.put("Message : ", "Leave Deleted sucefully");
+		map.put("Result : ",leaveService.ApproveLeave(id));
+		map.put("Status : ", HttpStatus.OK);
+		map.put("Code : ", HttpStatus.OK.value());
+		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);
 	}
 	
 }

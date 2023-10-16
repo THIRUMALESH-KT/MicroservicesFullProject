@@ -15,5 +15,4 @@ public class UserLeaveRequest {
 	private String reason;
     private boolean isHalfDay; // Add this field
 
-	private MultipartFile file;
 }

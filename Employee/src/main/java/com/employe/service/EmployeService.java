@@ -54,7 +54,7 @@ public class EmployeService {
 				employe.getAccesCode(), employe.getName(), employe.getMobile(), employe.getDesignation(),
 				employe.getPassword(), employe.getEmail(), employe.getStartDate(), null, employe.getSkill(),
 				employe.getManagerId());
-		if (!employe.getDesignation().equalsIgnoreCase("MANAGER")) {
+		if (!employe.getDesignation().equalsIgnoreCase("MANAGER")&& !employe.getDesignation().equalsIgnoreCase("HR")) {
 			log.info("*********before calling manager getById endPoint");
 			ResponseEntity<Object> ob = restTemplate.exchange(managerBaseUrl + "/getById/" + employe.getManagerId(),
 					HttpMethod.GET, null, Object.class);
@@ -83,14 +83,14 @@ public class EmployeService {
 
 	public Object GetAllEmployes() throws Exception {
 
-		return null;
+		return employeeRepository.findAll();
 	}
 
 	public EmployeeMicroservices getHr() throws Exception {
 		log.info("************inside getHr EmployeeService");
 		EmployeeMicroservices hr=employeeRepository.findByDesignation("HR");
 		if(hr==null)throw new Exception("Hr not Found");
-		return null;
+		return hr;
 	}
 
 }
