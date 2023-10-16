@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.leaveType.service.LeaveTypeService;
 import com.leaveType.userRequest.LeaveTypeUserRequest;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -24,15 +26,14 @@ public class LeaveTypeController {
 	@Autowired
 	private LeaveTypeService leaveTypeService;
 	@GetMapping("/addLeaveType")
-	public ResponseEntity<Map<String, Object>> CreateLeaveType(@RequestBody LeaveTypeUserRequest leaveTypeUserRequest){
-//		log.info("inside CreateLeaveType LeaveTypeController");
+	public ResponseEntity<Map<String, Object>> CreateLeaveType(@RequestBody LeaveTypeUserRequest leaveTypeUserRequest,HttpServletRequest httprequest){
+		log.info("inside CreateLeaveType LeaveTypeController");
 		Map<String, Object> map	=new HashMap<>();
-//		map.put("result", leaveTypeService.CreateLeaveType(leaveTypeUserRequest));
-//		map.put("status", HttpStatus.OK	);
-//		map.put("code", HttpStatus.OK.value());
-//		
-//		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
-		map.put("message", "addLeaveType working");
+		map.put("Message : ", "Leave Type Created sucefully");
+		map.put("result", leaveTypeService.CreateLeaveType(leaveTypeUserRequest,httprequest));
+		map.put("status", HttpStatus.OK	);
+		map.put("code", HttpStatus.OK.value());
+		
 		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
 		
 	}
@@ -45,5 +46,10 @@ public class LeaveTypeController {
 		map.put("code", HttpStatus.OK.value());
 		
 		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
+	}
+	@GetMapping("/getDescription/{id}")
+	public String getDescription(@PathVariable Long id) {
+		log.info("*****inside getDescription LeaveTypeController");
+		return leaveTypeService.getDescription(id);
 	}
 }

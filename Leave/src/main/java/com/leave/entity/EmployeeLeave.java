@@ -38,14 +38,9 @@ public class EmployeeLeave {
 	private Long appliedBy;
 	@Lob
 	private Blob file;
-	private  String leaveStatus="Pending";
+	private  String leaveStatus;
 	
-	public   String getStatus() {
-		return leaveStatus;
-	}
-	public  void setStatus(String status) {
-		this.leaveStatus = status;
-	}
+	
 	
 	public void setLeaveFile(MultipartFile file) throws SerialException, SQLException, IOException {
 		

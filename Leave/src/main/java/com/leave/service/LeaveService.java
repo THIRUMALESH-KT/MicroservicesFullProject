@@ -46,10 +46,10 @@ public class LeaveService {
 	
 	private static final String employeeBaseUrl = "http://localhost:8083/employee";
 	private static final String managerBaseUrl = "http://localhost:8084/manager";
-
+	private static final String leaveTypeBaseUrl="http://lcalhost:8085/leaveType";
 	public EmployeeLeave ApplyLeave(UserLeaveRequest request, String tokenHeader, Long paramEmployeeId,MultipartFile file) throws Exception {
 		log.info("*************inside applyLeave LeaveService");
-		EmployeeLeave leave = new EmployeeLeave(null, null, request.getLeaveCode(), request.getFromDate(), request.getToDate(), request.getReason(), null, null,null);
+		EmployeeLeave leave = new EmployeeLeave(null, null, request.getLeaveCode(), request.getFromDate(), request.getToDate(), request.getReason(), null, null,"PENDING");
 		//setting file
 		if(file!=null)leave.setLeaveFile(file);
 		String token = tokenHeader.substring(7);
@@ -67,7 +67,6 @@ public class LeaveService {
 			throw new Exception("Employee id not Found");
 		leave.setEmployeeId(employee.getBody().getEmployeeId());
 		leave.setAppliedBy(selfId);
-	//	String employeeEmail = employee.getBody().getEmail();
 		
 		//extracting manager details
 		
@@ -97,6 +96,10 @@ public class LeaveService {
 		MimeMessageHelper helper=new MimeMessageHelper(message,true);
 		
 		helper.setTo(selfEmploye.getBody().getEmail());
+		
+		//Get the Leave Type Description using leave code
+		log.info("********fetch description from leavetype using leavecode");
+		helper.setSubject(restTemplate.exchange(leaveTypeBaseUrl+"/getDescription/"+request.getLeaveCode(), HttpMethod.GET, null, String.class).getBody());
 		InternetAddress[] ccRecipients = new InternetAddress[2]; // Assuming two recipients
 		 ccRecipients[0] = new InternetAddress(hrEmail);
 		 ccRecipients[1] = new InternetAddress(employee.getBody().getEmail());
@@ -149,8 +152,24 @@ public class LeaveService {
 	public EmployeeLeave ApproveLeave(Long id) throws Exception {
 		log.info("*********inside approveLeave LeaveService");
 		EmployeeLeave leave=repo.findById(id).orElseThrow(()->new Exception("There is no applied leave on given id"));
-		leave.setStatus("APPROVED");
+		leave.setLeaveStatus("APPROVED");
 		repo.save(leave);
+		log.info("******retrinve employee details ");
+		Long employeeId=leave.getEmployeeId();
+		ResponseEntity<employeeUserRequest> employee=restTemplate.exchange(employeeBaseUrl+"/getById"+employeeId, HttpMethod.GET, null, employeeUserRequest.class);
+		log.info("**********Sending Approved Email");
+		MimeMessage message=javaMailSender.createMimeMessage();
+		MimeMessageHelper helper=new MimeMessageHelper(message,true);
+		helper.setTo(employee.getBody().getEmail());
+		helper.setSubject("Leave Rejected ");
+		
+		log.debug("**********set variable to context");
+		Context context=new Context();
+		context.setVariable("employee", employee.getBody().getName());
+		context.setVariable("description", "your leave is Rejected . Please continue you Duty.");
+		context.setVariable("status", "Leave Rejected");
+		helper.setText(templateEngine.process("leaveApproved-template.html", context), true);
+		javaMailSender.send(message);
 		return leave;
 		
 	}
@@ -159,9 +178,24 @@ public class LeaveService {
 	public EmployeeLeave RejectLeave(Long id) throws Exception {
 		log.info("*********inside RejectLeave LeaveService");
 		EmployeeLeave leave=repo.findById(id).orElseThrow(()->new Exception("There is no applied leave on given id"));
-		leave.setStatus("REJECTED");
+		leave.setLeaveStatus("REJECTED");
 		repo.save(leave);
-		return null;
+		log.info("******retrinve employee details ");
+		Long employeeId=leave.getEmployeeId();
+		ResponseEntity<employeeUserRequest> employee=restTemplate.exchange(employeeBaseUrl+"/getById"+employeeId, HttpMethod.GET, null, employeeUserRequest.class);
+		log.info("**********Sending Approved Email");
+		MimeMessage message=javaMailSender.createMimeMessage();
+		MimeMessageHelper helper=new MimeMessageHelper(message,true);
+		helper.setTo(employee.getBody().getEmail());
+		helper.setSubject("Leave Approval ");
+		log.debug("**********set variable to context");
+		Context context=new Context();
+		context.setVariable("employee", employee.getBody().getName());
+		context.setVariable("Description", "your leave is approved. Take care and come back after your leave.");
+		context.setVariable("status", "Leave Approved");
+		helper.setText(templateEngine.process("leaveApproved-template.html", context), false);
+		javaMailSender.send(message);
+		return leave;
 	}
 
 	
