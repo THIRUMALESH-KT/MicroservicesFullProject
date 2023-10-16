@@ -54,8 +54,11 @@ public class EmployeService {
 				employe.getAccesCode(), employe.getName(), employe.getMobile(), employe.getDesignation(),
 				employe.getPassword(), employe.getEmail(), employe.getStartDate(), null, employe.getSkill(),
 				employe.getManagerId());
-		if (!employe.getDesignation().equalsIgnoreCase("MANAGER")&& !employe.getDesignation().equalsIgnoreCase("HR")) {
+
+		if ((!employe.getDesignation().equalsIgnoreCase("MANAGER")) && (!employe.getDesignation().equalsIgnoreCase("HR"))) {
 			log.info("*********before calling manager getById endPoint");
+			log.info("********* Designation"+employe.getDesignation());
+			log.info("********** manager Id "+employe.getManagerId());
 			ResponseEntity<Object> ob = restTemplate.exchange(managerBaseUrl + "/getById/" + employe.getManagerId(),
 					HttpMethod.GET, null, Object.class);
 			log.info("*********after calling manager getById endPoint");
@@ -73,12 +76,18 @@ public class EmployeService {
 				// ",HttpStatus.BAD_REQUEST);
 			}
 
-		} else {
+		} else if(employe.getDesignation().equalsIgnoreCase("MANAGER")) {
 			employeeMicroservices.setManagerId(employe.getEmployeeId());
 			restTemplate.exchange(managerBaseUrl+"/insert", HttpMethod.POST,new HttpEntity<employeeUserRequest>(employe), Void.class);
 			employeeRepository.save(employeeMicroservices);
 			return "Employee Saved ";
+		}else if(employe.getDesignation().equalsIgnoreCase("HR")) {
+			employeeMicroservices.setManagerId(employe.getEmployeeId());
+			employeeRepository.save(employeeMicroservices);
+			
+			return "Employee saved sucessfully";
 		}
+		return "Employee Saved Sucessfully";
 	}
 
 	public Object GetAllEmployes() throws Exception {

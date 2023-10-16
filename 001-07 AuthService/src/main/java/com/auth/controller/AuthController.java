@@ -1,5 +1,9 @@
 package com.auth.controller;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -45,7 +49,7 @@ public class AuthController {
 	@GetMapping("/welcome")
 	public String welcome() {
 		log.info("*******inside Welcome AuthController");
-		return authService.welcome();
+		return "Hello This is welcomePage";
 	}
 	@GetMapping("/hello")
 	public String hello() {
@@ -54,9 +58,9 @@ public class AuthController {
 	}
 	//Register User
 	@PostMapping("/addEmployee")
-	public ResponseEntity<Object> addEmployee(@RequestBody employeeUserRequest employe) {
+	public  Object addEmployee(@RequestBody employeeUserRequest employe) {
 		log.info("*******inside addEmployee AuthController");
-		return new ResponseEntity<Object>(authService.addEmployee(employe),HttpStatus.OK);
+		return authService.addEmployee(employe);
 	}
 	//Generate Token
 	@GetMapping("/login")

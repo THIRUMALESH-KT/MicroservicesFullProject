@@ -32,6 +32,7 @@ public class AuthService {
 		return restTemplate.getForObject(employeeBasePath+"/welcome",String.class);
 	}
 	public Object addEmployee(employeeUserRequest employe) {
+		
 		log.info("*********inside addEmployee AuthService");
 		employe.setPassword(passwordEncoder.encode(employe.getPassword()));
 		  ResponseEntity<String> response = restTemplate.exchange(employeeBasePath + "/insert", HttpMethod.POST, new HttpEntity<>(employe), String.class);

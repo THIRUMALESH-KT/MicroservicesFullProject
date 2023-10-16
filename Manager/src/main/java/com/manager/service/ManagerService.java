@@ -39,13 +39,14 @@ public class ManagerService {
 
 	public Manager GetById(Long id) throws Exception {
 		log.info("inside getBYId ManagerService");
+		log.info("Manager id : "+id);
 		Manager manager1=managerRepository.findByManagerId(id);
 		if(manager1==null)throw new Exception("Manger id not found");
 		return manager1;
 	}
 
 	public Object Insert(MangerUserRequest employe) throws Exception {
-		Manager manager1=GetById(employe.getEmployeeId());
+		Manager manager1=managerRepository.findByManagerId(employe.getEmployeeId());
 		if(manager1!=null) 
 			throw new Exception("(Dublicate Employee) Employee already registred with this employee name : "+employe.getName());
 		

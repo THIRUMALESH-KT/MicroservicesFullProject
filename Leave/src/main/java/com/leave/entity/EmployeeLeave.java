@@ -38,13 +38,13 @@ public class EmployeeLeave {
 	private Long appliedBy;
 	@Lob
 	private Blob file;
-	private static String LeaveStatus="Pending";
+	private  String leaveStatus="Pending";
 	
-	public static  String getStatus() {
-		return LeaveStatus;
+	public   String getStatus() {
+		return leaveStatus;
 	}
-	public static void setStatus(String status) {
-		EmployeeLeave.LeaveStatus = status;
+	public  void setStatus(String status) {
+		this.leaveStatus = status;
 	}
 	
 	public void setLeaveFile(MultipartFile file) throws SerialException, SQLException, IOException {

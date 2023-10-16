@@ -26,5 +26,5 @@ public class EmployeeMicroservices {
 	    private String startDate;
 	    private String endDate;
 	    private String skill;
-	    private Long ManagerId;
+	    private Long managerId;
 }

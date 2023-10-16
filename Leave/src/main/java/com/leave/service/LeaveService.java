@@ -8,6 +8,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -24,6 +26,7 @@ import com.leave.userRequest.employeeUserRequest;
 
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -44,30 +47,47 @@ public class LeaveService {
 	private static final String employeeBaseUrl = "http://localhost:8083/employee";
 	private static final String managerBaseUrl = "http://localhost:8084/manager";
 
-	public String ApplyLeave(UserLeaveRequest request, String tokenHeader, Long paramEmployeeId,MultipartFile file) throws Exception {
+	public EmployeeLeave ApplyLeave(UserLeaveRequest request, String tokenHeader, Long paramEmployeeId,MultipartFile file) throws Exception {
 		log.info("*************inside applyLeave LeaveService");
-		EmployeeLeave leave = new EmployeeLeave(null, null, request.getLeaveCode(), request.getFromDate(), request.getToDate(), request.getReason(), null, null);
+		EmployeeLeave leave = new EmployeeLeave(null, null, request.getLeaveCode(), request.getFromDate(), request.getToDate(), request.getReason(), null, null,null);
 		//setting file
 		if(file!=null)leave.setLeaveFile(file);
 		String token = tokenHeader.substring(7);
 		log.info("********before extrace token");
-		Long managerId = Long.valueOf(jwtService.extractEmployeeId(token));
-		log.info("********after extract token id: " + managerId);
+		Long selfId = Long.valueOf(jwtService.extractEmployeeId(token));
+		log.info("********after extract token id: " + selfId);
+		
 		//extracting employee details
-		ResponseEntity<employeeUserRequest> employee = restTemplate.exchange(
+		ResponseEntity<employeeUserRequest> employee=new ResponseEntity<employeeUserRequest>(HttpStatus.OK);
+		ResponseEntity<employeeUserRequest> selfEmploye=new ResponseEntity<employeeUserRequest>(HttpStatus.OK);
+		if(paramEmployeeId!=null) {
+		 employee = restTemplate.exchange(
 				employeeBaseUrl + "/getById/" + paramEmployeeId, HttpMethod.GET, null, employeeUserRequest.class);
 		if (employee.getBody() == null)
 			throw new Exception("Employee id not Found");
 		leave.setEmployeeId(employee.getBody().getEmployeeId());
-		leave.setAppliedBy(managerId);
-		String employeeEmail = employee.getBody().getEmail();
+		leave.setAppliedBy(selfId);
+	//	String employeeEmail = employee.getBody().getEmail();
+		
 		//extracting manager details
-		ResponseEntity<employeeUserRequest> manager = restTemplate.exchange(managerBaseUrl+"/getById/"+managerId, HttpMethod.GET, null,
+		
+		 selfEmploye = restTemplate.exchange(employeeBaseUrl+"/getById/"+selfId, HttpMethod.GET, null,
 				employeeUserRequest.class);
-		if(manager.getBody()==null)throw new Exception("Manager Id not found");
-		String managerEmail=manager.getBody().getEmail();
+		 if(selfEmploye.getBody()==null)throw new Exception("Manager Id not found");
+
+	}
+		if(paramEmployeeId==null) {
+			employee= restTemplate.exchange(employeeBaseUrl+"/getById/"+selfId, HttpMethod.GET, null,
+					employeeUserRequest.class);
+			selfEmploye = restTemplate.exchange(employeeBaseUrl+"/getById/"+selfId, HttpMethod.GET, null,
+					employeeUserRequest.class);
+			leave.setEmployeeId(employee.getBody().getEmployeeId());
+			leave.setAppliedBy(selfEmploye.getBody().getEmployeeId());
+		}
+	//	String managerEmail=selfEmploye.getBody().getEmail();
+		
 		//extracting hr details
-		ResponseEntity<employeeUserRequest> hr=restTemplate.exchange(employeeBaseUrl+"/getHr", HttpMethod.GET, manager, employeeUserRequest.class);
+		ResponseEntity<employeeUserRequest> hr=restTemplate.exchange(employeeBaseUrl+"/getHr", HttpMethod.GET, selfEmploye, employeeUserRequest.class);
 		if(hr.getBody()==null) throw new Exception("Hr Details not Foune");
 			
 		
@@ -75,16 +95,17 @@ public class LeaveService {
 		//Sending Mail
 		MimeMessage message=javaMailSender.createMimeMessage();
 		MimeMessageHelper helper=new MimeMessageHelper(message,true);
-		helper.setTo(managerEmail);
+		
+		helper.setTo(selfEmploye.getBody().getEmail());
 		InternetAddress[] ccRecipients = new InternetAddress[2]; // Assuming two recipients
 		 ccRecipients[0] = new InternetAddress(hrEmail);
-		 ccRecipients[1] = new InternetAddress(employeeEmail);
+		 ccRecipients[1] = new InternetAddress(employee.getBody().getEmail());
 		// Set the CC recipients in your email message
 		helper.setCc(ccRecipients);
         helper.setSubject("Leave Email");
         if(file!=null)helper.addAttachment(file.getOriginalFilename(), new ByteArrayResource(file.getBytes()));
         Context context=new Context();
-        context.setVariable("Manager", manager.getBody().getName());
+        context.setVariable("Manager", selfEmploye.getBody().getName());
         context.setVariable("Employee", employee.getBody().getName());
         context.setVariable("leaveFromDate", request.getFromDate());
         context.setVariable("leaveEndDate", request.getToDate()	);
@@ -105,17 +126,18 @@ public class LeaveService {
  
         }
         String emailContent = templateEngine.process("email-template.html", context);
-
         helper.setText(emailContent,true);
         javaMailSender.send(message);
-        repo.save(leave);
+        
         log.info("******Email Sent Sucefully");
-        return "Leave Applied Sucefully";
+        return repo.save(leave);
 	}
+	
 
 	public Object DeleteLeave(Long id) throws Exception {
 		EmployeeLeave leave = repo.findById(id).orElseThrow(() -> new Exception("There is no applied leave on given id "));
-		return leave;
+		repo.deleteById(id);
+		return "Leave Deleted sucedfully";
 	}
 
 	public Object getAllEmployeesLeaveData() {
@@ -124,9 +146,24 @@ public class LeaveService {
 		return repo.findAll();
 	}
 
-	public Object ApproveLeave(Long id) {
+	public EmployeeLeave ApproveLeave(Long id) throws Exception {
+		log.info("*********inside approveLeave LeaveService");
+		EmployeeLeave leave=repo.findById(id).orElseThrow(()->new Exception("There is no applied leave on given id"));
+		leave.setStatus("APPROVED");
+		repo.save(leave);
+		return leave;
+		
+	}
 
+
+	public EmployeeLeave RejectLeave(Long id) throws Exception {
+		log.info("*********inside RejectLeave LeaveService");
+		EmployeeLeave leave=repo.findById(id).orElseThrow(()->new Exception("There is no applied leave on given id"));
+		leave.setStatus("REJECTED");
+		repo.save(leave);
 		return null;
 	}
+
+	
 
 }
