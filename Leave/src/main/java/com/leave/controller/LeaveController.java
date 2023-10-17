@@ -34,7 +34,6 @@ public class LeaveController {
 
 	@Autowired
 	private LeaveService leaveService;
-	
 	@PostMapping("/applyLeave/{employeeId}")
 	public ResponseEntity<Map<String,Object>> applyLeave(@RequestBody(required = false) UserLeaveRequest reqest,HttpServletRequest request ,@PathVariable Long employeeId,@RequestParam(name="file",required = false)MultipartFile file)throws Exception{
 		log.info("************inside ApplyLeave LeaveController");
