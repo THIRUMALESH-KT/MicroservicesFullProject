@@ -96,9 +96,10 @@ public class EmployeService {
 	}
 
 	public EmployeeMicroservices getHr() throws Exception {
-		log.info("************inside getHr EmployeeService");
+		log.info("************inside getHr EmployeeServicee");
 		EmployeeMicroservices hr=employeeRepository.findByDesignation("HR");
 		if(hr==null)throw new Exception("Hr not Found");
+		log.info("************after fetching hr details");
 		return hr;
 	}
 

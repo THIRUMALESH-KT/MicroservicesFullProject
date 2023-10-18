@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.leaveType.entity.LeaveType;
+import com.leaveType.repository.LeaveTypeRepositore;
 import com.leaveType.userRequest.LeaveTypeUserRequest;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,7 +19,8 @@ public class LeaveTypeService {
 
 	@Autowired
 	private LeaveTypeRepositore leaveTypeRepositore;
-	@Autowired JwtService jwtService;
+	@Autowired 
+	private JwtService jwtService;
 	public Object CreateLeaveType(LeaveTypeUserRequest leaveTypeUserRequest, HttpServletRequest httprequest) {
 		log.info("*********inside CreateLeaveType LeaveTypeService");
 		Long employeeId=Long.valueOf(jwtService.extractEmployeeId( httprequest.getHeader("Authorization").substring(7)));
@@ -30,8 +32,10 @@ public class LeaveTypeService {
 		return leaveTypeRepositore.findAll();
 	}
 
-	public String getDescription(Long id) {
-		return leaveTypeRepositore.findByLeaveCode(id);
+	public String getDescription(String id) throws Exception {
+		String description=leaveTypeRepositore.findByLeaveCode(id);
+		if(description==null)throw new Exception("invalid leave code");
+		return description;
 	}
 
 }

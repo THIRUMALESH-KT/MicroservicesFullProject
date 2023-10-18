@@ -48,7 +48,7 @@ public class LeaveTypeController {
 		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
 	}
 	@GetMapping("/getDescription/{id}")
-	public String getDescription(@PathVariable Long id) {
+	public String getDescription(@PathVariable String id) throws Exception {
 		log.info("*****inside getDescription LeaveTypeController");
 		return leaveTypeService.getDescription(id);
 	}

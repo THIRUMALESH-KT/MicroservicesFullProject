@@ -29,7 +29,7 @@ public class JwtService {
 		Map<String, Object> claims = new HashMap<>();
 		return Jwts.builder().issuer("Thiru").claims(claims).subject(userName)
 				.issuedAt(new Date(System.currentTimeMillis()))
-				.expiration(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5))).signWith(getSignKey())
+				.expiration(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(50))).signWith(getSignKey())
 				.compact();
 
 	}
@@ -41,12 +41,14 @@ public class JwtService {
 	}
 
 	public String extractEmployeeId(String token) {
-
+		log.info("*******inside extractEmployeeId JwtService ");
 		return extractClaims(token).getSubject();
 	}
 
 	public Claims extractClaims(String token) {
+		log.info("********inside extractclaims JwtService ");
 		Claims claims = Jwts.parser().verifyWith(getSignKey()).build().parseUnsecuredClaims(token).getPayload();
+		log.info("********after ExtractClaims ");
 		return claims;
 	}
 }

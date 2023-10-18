@@ -75,14 +75,18 @@ public class AuthController {
 	}
 	}
 	@GetMapping("/authenticate")
-	public void LoadUserDetails(HttpServletRequest request) {
+	public void LoadUserDetails( HttpServletRequest request) {
+		
+		log.info("********inside loadUserDetails AuthController");
 		String header=request.getHeader("Authorization");
 		
 		String Token=header.substring(7);
-
+		log.info("*******token : "+Token);
 		String UserName=jwtService.extractEmployeeId(Token);
 		UserDetails userDetails=userDetailsService.loadUserByUsername(UserName);
+		log.info("****userDetails: "+userDetails);
 		UsernamePasswordAuthenticationToken authtoken=new UsernamePasswordAuthenticationToken(UserName, userDetails.getPassword(), userDetails.getAuthorities());
+		log.info("Token Details : "+authtoken);
 		System.out.println(authtoken);
 		authtoken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 		SecurityContextHolder.getContext().setAuthentication(authtoken);

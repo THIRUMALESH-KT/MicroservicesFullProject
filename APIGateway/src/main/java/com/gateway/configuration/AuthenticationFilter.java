@@ -1,0 +1,54 @@
+package com.gateway.configuration;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gateway.filter.GatewayFilter;
+import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import lombok.extern.slf4j.Slf4j;
+
+@Component
+@Slf4j
+public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
+    @Autowired
+    private RouteValidator validator;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private static final String authServiceUrl = "http://AUTH-SERVICE/auth";
+
+    public AuthenticationFilter() {
+        super(Config.class);
+    }
+
+    @Override
+    public GatewayFilter apply(Config config) {
+        log.info("inside Gatewayfilter apply");
+        return (exchange, chain) -> {
+            log.info("****inside return");
+            if (validator.isSecured.test(exchange)) {
+                log.info("********inside 1st if");
+                if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+                    throw new RuntimeException("missing authorization header");
+                }
+                String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+                if (authHeader != null && authHeader.startsWith("Bearer")) {
+                    authHeader = authHeader.substring(7);
+                }
+                log.info("*********before authentication");
+                
+                restTemplate.exchange(authServiceUrl + "/authenticate/"+exchange , HttpMethod.GET, null, Void.class);
+                log.info("*********after authentication");
+            }
+            log.info("********out side filter");
+            return chain.filter(exchange);
+        };
+    }
+
+    public static class Config {
+    }
+}

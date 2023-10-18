@@ -14,10 +14,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestTemplate;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Configuration
 @EnableWebSecurity
+@Slf4j
 public class AuthConfig {
 
+	
 	@Bean
 	public RestTemplate restTemplate() {
 		return new RestTemplate();
@@ -29,9 +33,19 @@ public class AuthConfig {
 				csrf.disable())
 				.authorizeHttpRequests(authorizweRequests->
 				authorizweRequests
-				.requestMatchers("/auth/welcome","/auth/hello","/auth/addEmployee","/auth/applyLeave","auth/login","auth/authenticate")
+				.requestMatchers("/auth/hello","auth/login","/auth/authenticate/**")
 				.permitAll()
+				.requestMatchers("/auth/welcome","/leave/welcome")
+				.hasRole("1005")
+				.anyRequest()
+				.authenticated()
 				)
+				.exceptionHandling(exception->
+				exception
+				.accessDeniedHandler((request, response, accessDeniedException) -> {
+			        log.error("Access Denied: " + accessDeniedException.getMessage());
+			        // You can add more details or custom responses here.
+			    }))
 				.build();
 	}
 	@Bean

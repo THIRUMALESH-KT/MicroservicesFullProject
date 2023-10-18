@@ -46,7 +46,7 @@ public class LeaveService {
 	
 	private static final String employeeBaseUrl = "http://localhost:8083/employee";
 	private static final String managerBaseUrl = "http://localhost:8084/manager";
-	private static final String leaveTypeBaseUrl="http://lcalhost:8085/leaveType";
+	private static final String leaveTypeBaseUrl="http://localhost:8086/leaveType";
 	public EmployeeLeave ApplyLeave(UserLeaveRequest request, String tokenHeader, Long paramEmployeeId,MultipartFile file) throws Exception {
 		log.info("*************inside applyLeave LeaveService");
 		EmployeeLeave leave = new EmployeeLeave(null, null, request.getLeaveCode(), request.getFromDate(), request.getToDate(), request.getReason(), null, null,"PENDING");
@@ -87,9 +87,8 @@ public class LeaveService {
 		
 		//extracting hr details
 		ResponseEntity<employeeUserRequest> hr=restTemplate.exchange(employeeBaseUrl+"/getHr", HttpMethod.GET, selfEmploye, employeeUserRequest.class);
-		if(hr.getBody()==null) throw new Exception("Hr Details not Foune");
+		if(hr.getBody()==null) throw new Exception("Hr Details not Found");
 			
-		
 		String hrEmail=hr.getBody().getEmail();
 		//Sending Mail
 		MimeMessage message=javaMailSender.createMimeMessage();
@@ -98,7 +97,7 @@ public class LeaveService {
 		helper.setTo(selfEmploye.getBody().getEmail());
 		
 		//Get the Leave Type Description using leave code
-		log.info("********fetch description from leavetype using leavecode");
+		log.info("********fetch description from leavetype using leavecode :"+request.getLeaveCode());
 		helper.setSubject(restTemplate.exchange(leaveTypeBaseUrl+"/getDescription/"+request.getLeaveCode(), HttpMethod.GET, null, String.class).getBody());
 		InternetAddress[] ccRecipients = new InternetAddress[2]; // Assuming two recipients
 		 ccRecipients[0] = new InternetAddress(hrEmail);
