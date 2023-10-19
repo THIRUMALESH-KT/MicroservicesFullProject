@@ -79,10 +79,11 @@ public class AuthController {
 		
 		log.info("********inside loadUserDetails AuthController");
 		String header=request.getHeader("Authorization");
-		
+		log.info("******header : "+header);
 		String Token=header.substring(7);
 		log.info("*******token : "+Token);
 		String UserName=jwtService.extractEmployeeId(Token);
+		log.info("*******userName : "+UserName);
 		UserDetails userDetails=userDetailsService.loadUserByUsername(UserName);
 		log.info("****userDetails: "+userDetails);
 		UsernamePasswordAuthenticationToken authtoken=new UsernamePasswordAuthenticationToken(UserName, userDetails.getPassword(), userDetails.getAuthorities());

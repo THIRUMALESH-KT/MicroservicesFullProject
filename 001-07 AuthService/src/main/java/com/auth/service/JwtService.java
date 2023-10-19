@@ -27,9 +27,9 @@ public class JwtService {
 	public String generteToken(String userName) {
 		log.info("*********inside generateToken");
 		Map<String, Object> claims = new HashMap<>();
-		return Jwts.builder().issuer("Thiru").claims(claims).subject(userName)
-				.issuedAt(new Date(System.currentTimeMillis()))
-				.expiration(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(50))).signWith(getSignKey())
+		return Jwts.builder().setClaims(new HashMap<>()).setSubject(userName)
+				.setIssuedAt(new Date(System.currentTimeMillis()))
+				.setExpiration(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(50))).signWith(getSignKey())
 				.compact();
 
 	}
@@ -47,8 +47,11 @@ public class JwtService {
 
 	public Claims extractClaims(String token) {
 		log.info("********inside extractclaims JwtService ");
-		Claims claims = Jwts.parser().verifyWith(getSignKey()).build().parseUnsecuredClaims(token).getPayload();
-		log.info("********after ExtractClaims ");
-		return claims;
+//		Claims claims = Jwts.parser().verifyWith(getSignKey()).build().parseUnsecuredClaims(token).getPayload();
+//		log.info("********after ExtractClaims ");
+//		return claims;
+		Claims clims= Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token).getBody();
+		log.info(clims.toString());
+		return clims;
 	}
 }
