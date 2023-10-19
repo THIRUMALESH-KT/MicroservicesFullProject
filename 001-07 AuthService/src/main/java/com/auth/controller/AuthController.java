@@ -75,22 +75,30 @@ public class AuthController {
 	}
 	}
 	@GetMapping("/authenticate")
-	public void LoadUserDetails( HttpServletRequest request) {
-		
-		log.info("********inside loadUserDetails AuthController");
-		String header=request.getHeader("Authorization");
-		log.info("******header : "+header);
-		String Token=header.substring(7);
-		log.info("*******token : "+Token);
-		String UserName=jwtService.extractEmployeeId(Token);
-		log.info("*******userName : "+UserName);
-		UserDetails userDetails=userDetailsService.loadUserByUsername(UserName);
-		log.info("****userDetails: "+userDetails);
-		UsernamePasswordAuthenticationToken authtoken=new UsernamePasswordAuthenticationToken(UserName, userDetails.getPassword(), userDetails.getAuthorities());
-		log.info("Token Details : "+authtoken);
-		System.out.println(authtoken);
-		authtoken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-		SecurityContextHolder.getContext().setAuthentication(authtoken);
-	
+	public ResponseEntity<String> loadUserDetails(HttpServletRequest request) {
+	    try {
+	        log.info("********inside loadUserDetails AuthController");
+	        String header = request.getHeader("Authorization");
+	        log.info("******header : " + header);
+	        if (header == null || !header.startsWith("Bearer ")) {
+	            throw new IllegalArgumentException("Invalid or missing authorization header");
+	        }
+	        String token = header.substring(7);
+	        log.info("*******token : " + token);
+	        String userName = jwtService.extractEmployeeId(token);
+	        log.info("*******userName : " + userName);
+	        UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
+	        log.info("****userDetails: " + userDetails);
+	        UsernamePasswordAuthenticationToken authtoken = new UsernamePasswordAuthenticationToken(userName, userDetails.getPassword(), userDetails.getAuthorities());
+	        log.info("Token Details : " + authtoken);
+	        authtoken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+	        SecurityContextHolder.getContext().setAuthentication(authtoken);
+	        return ResponseEntity.ok("Authentication successful");
+	    } catch (Exception ex) {
+	        log.error("Exception in /authenticate endpoint: " + ex.getMessage());
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+	    }
 	}
+	
+
 }

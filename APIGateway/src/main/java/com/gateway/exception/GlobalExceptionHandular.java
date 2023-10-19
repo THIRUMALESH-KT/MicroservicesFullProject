@@ -24,4 +24,15 @@ public class GlobalExceptionHandular {
 		
 		
 	}
+	@ExceptionHandler(RuntimeException.class)
+	public ResponseEntity<Map<String, Object>> RuntimeException(RuntimeException ex){
+		Map<String , Object> map=new HashMap<>();
+		map.put(" Result  : ", " Fail ");
+		map.put(" Error message : ", ex.getMessage());
+		map.put(" From : ", ex.getClass());
+		map.put("status : ",String.valueOf(HttpStatus.BAD_REQUEST.value()));
+		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.BAD_REQUEST);
+		
+		
+	}
 }
