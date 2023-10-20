@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.auth.config.JwtAuthenticationFilter;
 import com.auth.service.AuthService;
 import com.auth.service.JwtService;
 import com.auth.userRequest.LoginRequest;
@@ -76,29 +77,36 @@ public class AuthController {
 	}
 	@GetMapping("/authenticate")
 	public ResponseEntity<String> loadUserDetails(HttpServletRequest request) {
-	    try {
-	        log.info("********inside loadUserDetails AuthController");
-	        String header = request.getHeader("Authorization");
-	        log.info("******header : " + header);
-	        if (header == null || !header.startsWith("Bearer ")) {
-	            throw new IllegalArgumentException("Invalid or missing authorization header");
-	        }
-	        String token = header.substring(7);
-	        log.info("*******token : " + token);
-	        String userName = jwtService.extractEmployeeId(token);
-	        log.info("*******userName : " + userName);
-	        UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
-	        log.info("****userDetails: " + userDetails);
-	        UsernamePasswordAuthenticationToken authtoken = new UsernamePasswordAuthenticationToken(userName, userDetails.getPassword(), userDetails.getAuthorities());
-	        log.info("Token Details : " + authtoken);
-	        authtoken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-	        SecurityContextHolder.getContext().setAuthentication(authtoken);
-	        return ResponseEntity.ok("Authentication successful");
-	    } catch (Exception ex) {
-	        log.error("Exception in /authenticate endpoint: " + ex.getMessage());
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
-	    }
+//	    try {
+//	        log.info("********inside loadUserDetails AuthController");
+//	        String header = request.getHeader("Authorization");
+//	        log.info("******header : " + header);
+//	        if (header == null || !header.startsWith("Bearer ")) {
+//	            throw new IllegalArgumentException("Invalid or missing authorization header");
+//	        }
+//	        String token = header.substring(7);
+//	        log.info("*******token : " + token);
+//	        String userName = jwtService.extractEmployeeId(token);
+//	        log.info("*******userName : " + userName);
+//	        UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
+//	        log.info("****userDetails: " + userDetails);
+//	        UsernamePasswordAuthenticationToken authtoken = new UsernamePasswordAuthenticationToken(userName, userDetails.getPassword(), userDetails.getAuthorities());
+//	        log.info("Token Details : " + authtoken);
+//	        authtoken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+//	        SecurityContextHolder.getContext().setAuthentication(authtoken);
+//	        return ResponseEntity.ok("Authentication successful");
+//	    } catch (Exception ex) {
+//	        log.error("Exception in /authenticate endpoint: " + ex.getMessage());
+//	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+//	    }
+		return null;
 	}
+	
+//	@GetMapping("/filter")
+//	public void FilterAcess() {
+//        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter();
+//        jwtAuthenticationFilter.doFilter(null, null, null)
+//	}
 	
 
 }
