@@ -13,14 +13,14 @@ import com.auth.userRequest.employeeUserRequest;
 
 public class CustomUserDetails implements UserDetails {
 
-	private employeeUserRequest employeeUserRequest;
-	public CustomUserDetails(employeeUserRequest employeeUserRequest) {
-		this.employeeUserRequest=employeeUserRequest;
+	private UserPrinciples User;
+	public CustomUserDetails(UserPrinciples employeeUserRequest) {
+		this.User=employeeUserRequest;
 	}
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		List<GrantedAuthority>list=new ArrayList<>();
-		list.add(new SimpleGrantedAuthority(("ROLE_"+employeeUserRequest.getAccesCode())));
+		list.add(new SimpleGrantedAuthority(("ROLE_"+User.getAccessCode())));
 		return list;
 	
 	}
@@ -28,13 +28,13 @@ public class CustomUserDetails implements UserDetails {
 	@Override
 	public String getPassword() {
 		// TODO Auto-generated method stub
-		return employeeUserRequest.getPassword();
+		return User.getPassword();
 	}
 
 	@Override
 	public String getUsername() {
 		// TODO Auto-generated method stub
-		return String.valueOf(employeeUserRequest.getEmployeeId());
+		return String.valueOf(User.getEmployeeId());
 	}
 
 	@Override

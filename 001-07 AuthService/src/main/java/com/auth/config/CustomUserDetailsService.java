@@ -17,7 +17,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 	private RestTemplate restTemplate;
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		ResponseEntity<employeeUserRequest> credentials=restTemplate.exchange("http://localhost:8083/employee/getById/"+Long.valueOf(username), HttpMethod.GET, null, employeeUserRequest.class);
+		ResponseEntity<UserPrinciples> credentials=restTemplate.exchange("http://localhost:8083/employee/getUser/"+Long.valueOf(username), HttpMethod.GET, null, UserPrinciples.class);
 		return new CustomUserDetails(credentials.getBody());
 	}
 

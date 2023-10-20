@@ -63,13 +63,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                     .get(URI.create(authServiceUrl))
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + authHeader)
                     .build();
-//                try {
                 restTemplate.exchange(requestEntity, String.class);
-//                }catch(Exception ex)
-//                {
-//                	throw new RuntimeException("unauthorized");
-//                }
-//            
+   
                 log.info("*********after authentication");
             }
 

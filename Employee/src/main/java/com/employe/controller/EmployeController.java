@@ -1,9 +1,12 @@
 package com.employe.controller;
 
+import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.naming.TimeLimitExceededException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +26,8 @@ import com.employe.entity.EmployeeMicroservices;
 import com.employe.service.EmployeService;
 import com.employe.userRequest.employeeUserRequest;
 
+import jakarta.mail.MessagingException;
+import jakarta.ws.rs.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -69,13 +74,17 @@ public class EmployeController {
 	
 	@GetMapping("/getById/{id}")
 	public EmployeeMicroservices getById(@PathVariable(required = false) Long id) throws Exception{
+		///////
+		//
+		//
+		//
 		log.info("********inside getById employeeController");
 		return employeeService.GetById(id);
 	}
 	
 	//Update By Id
 	
-	@PutMapping("/update")
+	@PutMapping("/update/Personal/Details")
 	public  Object updateById(@RequestParam(required = false) Long id,@RequestBody(required = false) EmployeeMicroservices employee) throws Exception{
 		return "updateBYId working EmployeeController";
 	}
@@ -90,6 +99,33 @@ public class EmployeController {
 	public EmployeeMicroservices getHr() throws Exception{
 		log.info("***********inside getHr EmployeeController");
 		return employeeService.getHr();
+	}
+	
+	//  Password Reset
+	@PostMapping("/password/reset/request")
+	public ResponseEntity<Object> initiatePasswordReset(@RequestParam Long userId) throws UserPrincipalNotFoundException, MessagingException {
+		log.info("**********inside initiatePasswordReset EmployeeController");
+	    return ResponseEntity.ok(employeeService.initiatePasswordReset( userId));
+	}
+	
+	// Password Confirmation
+	
+	// 1. User submits the received OTP and a new password (controller)
+	@PostMapping("/password/reset/confirm")
+	public ResponseEntity<Object> confirmPasswordReset(
+		
+	        @RequestParam Long userId, 
+	        @RequestParam String otp, 
+	        @RequestParam String newPassword) throws NotFoundException, TimeLimitExceededException {
+		log.info("***********inside confirmPasswordReset EmployeeController");
+		return ResponseEntity.ok(employeeService.confirmPasswordReset(userId,otp, newPassword));
+	
+	}
+
+	@GetMapping("/getUser/{id}")
+	public ResponseEntity<Object> getUser(@PathVariable Long id) throws UserPrincipalNotFoundException{
+		log.info("********inside getUser Employee Controller");
+		return ResponseEntity.ok(employeeService.getUser(id));
 	}
 	
 }

@@ -66,7 +66,7 @@ public class AuthController {
 	//Generate Token
 	@GetMapping("/login")
 	public ResponseEntity<String> login(@RequestBody LoginRequest request)throws Exception{
-		log.info("inside login AuthController");
+		log.info("******** inside login AuthController");
 	Authentication authenticate=	authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getId(), request.getPassword()));
 	if(authenticate.isAuthenticated()) {
 		return new ResponseEntity<String>(authService.Login(request),HttpStatus.OK);
