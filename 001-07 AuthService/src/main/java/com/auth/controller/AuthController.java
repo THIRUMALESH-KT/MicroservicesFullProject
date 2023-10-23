@@ -102,11 +102,7 @@ public class AuthController {
 		return null;
 	}
 	
-//	@GetMapping("/filter")
-//	public void FilterAcess() {
-//        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter();
-//        jwtAuthenticationFilter.doFilter(null, null, null)
-//	}
+
 	
 
 }

@@ -12,6 +12,7 @@ public interface OTPRecordRepository extends JpaRepository<OTPRecord, Long> {
 
 	Optional<OTPRecord> findByUserIdAndOtp(Long userId, String otp);
 
-	void deleteByIdAndOtp(Long userId, String otp);
+
+	void deleteByUserIdAndOtp(Long userId, String otp);
 
 }

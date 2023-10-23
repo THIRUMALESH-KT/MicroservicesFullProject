@@ -41,11 +41,10 @@ public class SecurityConfig {
 				.requestMatchers("/employee/getAllEmployes","/manager/getAllEmploye","leave/applyLeave/**","/leave/allEmployeesLeaveData","/leave/approveLeave/**","/leave/rejectLeave/**","/leaveType/addLeaveType")
 				.hasRole("1005")
 				.requestMatchers("/employee/getById","/employee/update/Personal/Details","/employee/password/reset/request","/employee/password/reset/confirm","/leave/applyLeave","/leave/delete/**","/leaveType/getAllLeaveTypes")
-				.hasAnyAuthority("1001")
+				.hasRole("1001")
 				.anyRequest()
 				.authenticated()
 				)
-				
 				.exceptionHandling(exception->
 				exception
 				.accessDeniedHandler((request, response, accessDeniedException) -> {

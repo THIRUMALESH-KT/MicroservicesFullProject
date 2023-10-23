@@ -10,7 +10,7 @@ import java.util.function.Predicate;
 @Slf4j
 public class RouteValidator {
 
-    public static final List<String> OpenApiEndpoints = List.of("/auth/hello", "/auth/login","/auth/authenticate");
+    public static final List<String> OpenApiEndpoints = List.of("/auth/hello", "/auth/login","/auth/authenticate","/auth/welcome","/employee/welcome","/leave/welcome","/employee/password/reset/request","/employee/password/reset/confirm");
 
     public Predicate<ServerWebExchange> isSecured = exchange -> {
         log.info("******inside isSecured RouteValidator");

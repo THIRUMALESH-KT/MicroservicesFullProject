@@ -43,13 +43,11 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 	log.info("*********  No Header Found ");
                     throw new RuntimeException("Missing authorization header");
                 }
-
+                var request = exchange.getRequest();
+                // JWTUtil can extract the token from the request, parse it and verify if the given role is available
+              
                 // Extract the authorization header
                 String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-
-                if (authHeader != null && authHeader.startsWith("Bearer")) {
-                    authHeader = authHeader.substring(7);
-                }
 
                 log.info("*********before authentication");
                 
@@ -61,7 +59,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                
                 RequestEntity<Void> requestEntity = RequestEntity
                     .get(URI.create(authServiceUrl))
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + authHeader)
+                    .header(HttpHeaders.AUTHORIZATION,authHeader)
                     .build();
                 restTemplate.exchange(requestEntity, String.class);
    

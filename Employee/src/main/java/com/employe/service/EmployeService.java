@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -51,6 +52,9 @@ public class EmployeService {
 	@Autowired
 	private EmployeeRepository employeeRepository;
 	
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	
 	@Autowired
@@ -87,7 +91,7 @@ public class EmployeService {
 				 employe.getEmail(), employe.getStartDate(), null, employe.getSkill(),
 				employe.getManagerId());
 		UserPrinciples userPrinciples =new UserPrinciples(employe.getEmployeeId(), employe.getPassword(), employe.getAccesCode());
-		if ((!employe.getDesignation().equalsIgnoreCase("MANAGER")) && (!employe.getDesignation().equalsIgnoreCase("HR"))) {
+		if ((!employe.getDesignation().equalsIgnoreCase("MANAGER")) && (!employe.getDesignation().equalsIgnoreCase("HR")) && (!employe.getDesignation().equalsIgnoreCase("ADMIN"))) {
 			log.info("*********before calling manager getById endPoint");
 			log.info("********* Designation"+employe.getDesignation());
 			log.info("********** manager Id "+employe.getManagerId());
@@ -116,7 +120,7 @@ public class EmployeService {
 			userPrinciplesRepository.save(userPrinciples);
 
 			return "Employee Saved ";
-		}else if(employe.getDesignation().equalsIgnoreCase("HR")) {
+		}else if(employe.getDesignation().equalsIgnoreCase("HR")| employe.getDesignation().equalsIgnoreCase("ADMIN")) {
 			employeeMicroservices.setManagerId(employe.getEmployeeId());
 			employeeRepository.save(employeeMicroservices);
 			userPrinciplesRepository.save(userPrinciples);
@@ -140,7 +144,7 @@ public class EmployeService {
 	
 
 
-	public Object initiatePasswordReset(Long userId) throws UserPrincipalNotFoundException, MessagingException {
+	public EmployeeMicroservices initiatePasswordReset(Long userId) throws UserPrincipalNotFoundException, MessagingException {
 		log.info("*****inside PasswordReset EmployeeService ");
 		EmployeeMicroservices employee=employeeRepository.findByEmployeeId(userId);
 		if(employee==null)throw new UserPrincipalNotFoundException("invalid id ");
@@ -164,7 +168,7 @@ public class EmployeService {
 		MimeMessageHelper helper= new MimeMessageHelper(message);
 		helper.setTo(mail);
 		helper.setSubject("Password Reset OTP ");
-		helper.setText("Hello Your OTP for password regeneration"+otp);
+		helper.setText("Hello Your OTP for password regeneration "+otp);
 		javaMailSender.send(message);
 	}
 
@@ -198,11 +202,11 @@ public class EmployeService {
 	    if (isValidOTP(userId, otp)) {
 	        // 3. Reset the password for the user
 	    	UserPrinciples user=userPrinciplesRepository.findById(userId).orElseThrow(()->new NotFoundException());
-	    	user.setPassword(newPassword);
-
+	    	user.setPassword(passwordEncoder.encode(newPassword) );
+	    	
 	        // 4. Delete the used OTP from the database
-	        otpRepo.deleteByIdAndOtp(userId,otp);
-
+	        otpRepo.deleteByUserIdAndOtp(userId,otp);
+	        userPrinciplesRepository.save(user);
 	        return ResponseEntity.ok("Password reset successful.");
 	    } else {
 	        return new ResponseEntity<Object>("Invalid OTP. Password reset failed.",HttpStatus.BAD_REQUEST);

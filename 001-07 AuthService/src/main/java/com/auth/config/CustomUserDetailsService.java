@@ -1,4 +1,4 @@
-package com.auth.config;
+ package com.auth.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;

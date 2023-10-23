@@ -9,8 +9,12 @@ import java.util.Map;
 import javax.naming.TimeLimitExceededException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Role;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,12 +25,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.employe.entity.EmployeeMicroservices;
 import com.employe.service.EmployeService;
 import com.employe.userRequest.employeeUserRequest;
 
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,7 +44,8 @@ public class EmployeController {
 	@Autowired
 	private EmployeService employeeService;
 	
-	
+	@Autowired
+	private RestTemplate restTemplate;
 	
 	@GetMapping("/welcome")
 	public String welcome() {
@@ -55,9 +62,12 @@ public class EmployeController {
 	}
 	
 	@GetMapping("/getAllEmployes")
-	public ResponseEntity<Map<String, Object>> GetAllEmployes() throws Exception{
+	public ResponseEntity<Map<String, Object>> GetAllEmployes(HttpServletRequest request) throws Exception{
 		log.info("inside getAllEmployes EmployeController");
-		Map<String, Object> map=new LinkedHashMap<>();
+        String authServiceUrl = "http://localhost:8087/auth/authenticate"; 
+        ResponseEntity<String> authServiceResponse = restTemplate.exchange(authServiceUrl, HttpMethod.GET, new HttpEntity<>(request), String.class);
+        log.info("****after authentication getAllEmployes EmployeController");
+        Map<String, Object> map=new LinkedHashMap<>();
 		map.put("Message : ", "All Employee Details Fetched Sucefullt ");
 		map.put("Result : ", employeeService.GetAllEmployes());
 		map.put("Status : ", HttpStatus.OK);
@@ -71,13 +81,10 @@ public class EmployeController {
 	
 	
 	//Get By Employe ID
-	
+	//@Role(value = 1001)
 	@GetMapping("/getById/{id}")
 	public EmployeeMicroservices getById(@PathVariable(required = false) Long id) throws Exception{
-		///////
-		//
-		//
-		//
+		
 		log.info("********inside getById employeeController");
 		return employeeService.GetById(id);
 	}
@@ -105,7 +112,10 @@ public class EmployeController {
 	@PostMapping("/password/reset/request")
 	public ResponseEntity<Object> initiatePasswordReset(@RequestParam Long userId) throws UserPrincipalNotFoundException, MessagingException {
 		log.info("**********inside initiatePasswordReset EmployeeController");
-	    return ResponseEntity.ok(employeeService.initiatePasswordReset( userId));
+		EmployeeMicroservices employee=employeeService.initiatePasswordReset( userId);
+		Map<String , Object> map=new LinkedHashMap<>();
+		map.put("result : ", "otp sent to your registered email "+employee.getEmail());
+	    return ResponseEntity.ok(map);
 	}
 	
 	// Password Confirmation
