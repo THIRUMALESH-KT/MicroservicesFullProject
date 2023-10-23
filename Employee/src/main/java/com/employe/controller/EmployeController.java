@@ -64,9 +64,9 @@ public class EmployeController {
 	@GetMapping("/getAllEmployes")
 	public ResponseEntity<Map<String, Object>> GetAllEmployes(HttpServletRequest request) throws Exception{
 		log.info("inside getAllEmployes EmployeController");
-        String authServiceUrl = "http://localhost:8087/auth/authenticate"; 
-        ResponseEntity<String> authServiceResponse = restTemplate.exchange(authServiceUrl, HttpMethod.GET, new HttpEntity<>(request), String.class);
-        log.info("****after authentication getAllEmployes EmployeController");
+//        String authServiceUrl = "http://localhost:8087/auth/authenticate"; 
+//        ResponseEntity<String> authServiceResponse = restTemplate.exchange(authServiceUrl, HttpMethod.GET, new HttpEntity<>(request), String.class);
+//        log.info("****after authentication getAllEmployes EmployeController");
         Map<String, Object> map=new LinkedHashMap<>();
 		map.put("Message : ", "All Employee Details Fetched Sucefullt ");
 		map.put("Result : ", employeeService.GetAllEmployes());
