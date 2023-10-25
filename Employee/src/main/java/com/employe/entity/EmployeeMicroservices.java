@@ -1,5 +1,7 @@
  package com.employe.entity;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,11 +20,13 @@ public class EmployeeMicroservices {
 	    private Long id;
 	    private Long employeeId;
 	    private String name;
-	    private String mobile;
+	    private Long mobile;
 	    private String designation;
 	    private String email;
-	    private String startDate;
-	    private String endDate;
+	    private LocalDate startDate;
+	    private LocalDate endDate;
 	    private String skill;
 	    private Long managerId;
+	    private String status;
+	    private Boolean isDeleted;
 }

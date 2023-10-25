@@ -84,10 +84,10 @@ public class LeaveController {
 		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);
 	}
 	@GetMapping("/allEmployeesLeaveData")
-	public ResponseEntity<Map<String, Object>> AllEmployeesLeaveData() {
+	public ResponseEntity<Map<String, Object>> AllEmployeesLeaveData(HttpServletRequest request) {
 		log.info("***********inside AllEmployeesLeaveData LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
-		map.put("Result : ",leaveService.getAllEmployeesLeaveData());
+		map.put("Result : ",leaveService.getAllEmployeesLeaveData(request));
 		map.put("Status : ", HttpStatus.OK);
 		map.put("Code : ", HttpStatus.OK.value());
 		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);	}

@@ -25,16 +25,29 @@ public class ManagerService {
 	private ManagerRepository managerRepository;
 	
 	public Object DeleteById(Long id) throws Exception {
-		Manager employee=GetById(id);
+		Manager employee=managerRepository.findByManagerId(id);
+		if(employee!=null) {
 		managerRepository.delete(employee);
-		return "Employee Sucefully Deleted : "+id;
+		}
+		return employee;
 	}
 
-	public Manager UpdateById(Long id, MangerUserRequest Manager) throws Exception {
-		Manager Manager1=GetById(id);
+	public Manager UpdateById(Long id, MangerUserRequest request) throws Exception {
+		log.info("***********inside updateManagerId ManagaerService");
+		Manager employee=managerRepository.findByManagerId(id);
+		if(employee!=null)
+		{
+			log.info(" employee  not null");
+			employee.setName(request.getName());
+			employee.setMobile(Long.valueOf(request.getMobile()));
+			employee.setDesignation(request.getDesignation());
+			employee.setEmail(request.getEmail());
+			employee.setSkill(request.getSkill());
+			employee.setManagerId(request.getManagerId());
+			managerRepository.save(employee);
+		}
 		
-		
-		return managerRepository.save(Manager1);
+		return employee;
 	}
 
 	public Manager GetById(Long id) throws Exception {
@@ -50,7 +63,7 @@ public class ManagerService {
 		if(manager1!=null) 
 			throw new Exception("(Dublicate Employee) Employee already registred with this employee name : "+employe.getName());
 		
-		manager1=new Manager(null, employe.getName(), employe.getEmployeeId(), employe.getAccesCode(), null, employe.getDesignation(), employe.getPassword(),employe.getEmail(), employe.getSkill(), employe.getStartDate(), null, null, null);
+		manager1=new Manager(null, employe.getName(), employe.getEmployeeId(),null, employe.getDesignation(), employe.getEmail(),Long.valueOf(employe.getMobile()), employe.getSkill(), employe.getStartDate(), null);
 		
 		return managerRepository.save(manager1);
 	}
@@ -60,12 +73,24 @@ public class ManagerService {
 		if(list==null) throw new Exception();
 		return list;
 	}
-	public void AddEmployeeId(MangerUserRequest employe) throws Exception   {
-		Manager manager=GetById(employe.getManagerId());
+	public void AddEmployeeId(Long managerId,Long employeeId) throws Exception   {
+		log.info("*****inside addEmployeeId managerService");
+		log.info("*******employee Id: "+employeeId);
+		log.info("******managerId : "+managerId);
+		Manager manager=GetById(managerId);
 		manager.setEmployeesIds(new ArrayList<>(manager.getEmployeesIds()));
-		manager.getEmployeesIds().add(employe.getEmployeeId());	
+		manager.getEmployeesIds().add(employeeId);	
 		
 		managerRepository.save(manager);
+	}
+
+	public void RemoveEmployeeId(Long managerId, Long employeeId) throws Exception {
+		log.info("****** inside removeEmployeeId ManagerService");
+		Manager manager=GetById(managerId);
+		manager.setEmployeesIds(new ArrayList<>(manager.getEmployeesIds()));
+		manager.getEmployeesIds().remove(employeeId);
+		managerRepository.save(manager);
+
 	}
 	
 	

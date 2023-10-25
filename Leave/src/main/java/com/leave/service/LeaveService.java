@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import com.google.common.net.HttpHeaders;
 import com.leave.entity.EmployeeLeave;
 import com.leave.repository.LeaveRepository;
 import com.leave.userRequest.UserLeaveRequest;
@@ -49,66 +50,85 @@ public class LeaveService {
 	private static final String leaveTypeBaseUrl="http://localhost:8086/leaveType";
 	public EmployeeLeave ApplyLeave(UserLeaveRequest request, String tokenHeader, Long paramEmployeeId,MultipartFile file) throws Exception {
 		log.info("*************inside applyLeave LeaveService");
-		EmployeeLeave leave = new EmployeeLeave(null, null, request.getLeaveCode(), request.getFromDate(), request.getToDate(), request.getReason(), null, null,"PENDING");
+		EmployeeLeave leave = new EmployeeLeave(null, null, request.getLeaveCode(),null, request.getFromDate(), request.getToDate(), request.getReason(), null, null,"PENDING",null);
 		//setting file
+		if(leave.getToDate()!=null) {
+		    leave.setTotalDays(ChronoUnit.DAYS.between(leave.getFromDate(), leave.getToDate()));
+		
+			
+		}
+		else {
+		leave.setTotalDays(1l);
+		}
 		if(file!=null)leave.setLeaveFile(file);
 		String token = tokenHeader.substring(7);
+		String managerMail=null;
 		log.info("********before extrace token");
-		Long selfId = Long.valueOf(jwtService.extractEmployeeId(token));
-		log.info("********after extract token id: " + selfId);
+		Long tokenId = Long.valueOf(jwtService.extractEmployeeId(token));
+		log.info("********after extract token id: " + tokenId);
 		
 		//extracting employee details
 		ResponseEntity<employeeUserRequest> employee=new ResponseEntity<employeeUserRequest>(HttpStatus.OK);
-		ResponseEntity<employeeUserRequest> selfEmploye=new ResponseEntity<employeeUserRequest>(HttpStatus.OK);
+		ResponseEntity<employeeUserRequest> tokenEmployee=new ResponseEntity<employeeUserRequest>(HttpStatus.OK);
+		MimeMessage message=javaMailSender.createMimeMessage();
+		MimeMessageHelper helper=new MimeMessageHelper(message,true);
+        Context context=new Context();
+
 		if(paramEmployeeId!=null) {
 		 employee = restTemplate.exchange(
 				employeeBaseUrl + "/getById/" + paramEmployeeId, HttpMethod.GET, null, employeeUserRequest.class);
 		if (employee.getBody() == null)
 			throw new Exception("Employee id not Found");
 		leave.setEmployeeId(employee.getBody().getEmployeeId());
-		leave.setAppliedBy(selfId);
-		
+		leave.setAppliedBy(tokenId);
+		leave.setManagerId(employee.getBody().getManagerId());
 		//extracting manager details
 		
-		 selfEmploye = restTemplate.exchange(employeeBaseUrl+"/getById/"+selfId, HttpMethod.GET, null,
+		 tokenEmployee = restTemplate.exchange(employeeBaseUrl+"/getById/"+tokenId, HttpMethod.GET, null,
 				employeeUserRequest.class);
-		 if(selfEmploye.getBody()==null)throw new Exception("Manager Id not found");
+		 if(tokenEmployee.getBody()==null)throw new Exception(" Id not found");
+		 
+		 helper.setTo(tokenEmployee.getBody().getEmail());
+		 managerMail=tokenEmployee.getBody().getEmail();
+	        context.setVariable("Manager", tokenEmployee.getBody().getName());
+	        context.setVariable("Employee", employee.getBody().getName());
 
 	}
 		if(paramEmployeeId==null) {
-			employee= restTemplate.exchange(employeeBaseUrl+"/getById/"+selfId, HttpMethod.GET, null,
+
+			tokenEmployee = restTemplate.exchange(employeeBaseUrl+"/getById/"+tokenId, HttpMethod.GET, null,
 					employeeUserRequest.class);
-			selfEmploye = restTemplate.exchange(employeeBaseUrl+"/getById/"+selfId, HttpMethod.GET, null,
+						employee= restTemplate.exchange(employeeBaseUrl+"/getById/"+tokenEmployee.getBody().getManagerId(), HttpMethod.GET, null,
 					employeeUserRequest.class);
-			leave.setEmployeeId(employee.getBody().getEmployeeId());
-			leave.setAppliedBy(selfEmploye.getBody().getEmployeeId());
+			leave.setManagerId(tokenEmployee.getBody().getManagerId());
+			leave.setEmployeeId(tokenEmployee.getBody().getEmployeeId());
+			leave.setAppliedBy(tokenEmployee.getBody().getEmployeeId());
+			helper.setTo(employee.getBody().getEmail());
+			managerMail=employee.getBody().getEmail();
+	        context.setVariable("Manager", employee.getBody().getName());
+	        context.setVariable("Employee", tokenEmployee.getBody().getName());
+
 		}
 	//	String managerEmail=selfEmploye.getBody().getEmail();
 		
 		//extracting hr details
-		ResponseEntity<employeeUserRequest> hr=restTemplate.exchange(employeeBaseUrl+"/getHr", HttpMethod.GET, selfEmploye, employeeUserRequest.class);
+		ResponseEntity<employeeUserRequest> hr=restTemplate.exchange(employeeBaseUrl+"/getHr", HttpMethod.GET, tokenEmployee, employeeUserRequest.class);
 		if(hr.getBody()==null) throw new Exception("Hr Details not Found");
 			
 		String hrEmail=hr.getBody().getEmail();
 		//Sending Mail
-		MimeMessage message=javaMailSender.createMimeMessage();
-		MimeMessageHelper helper=new MimeMessageHelper(message,true);
+	
 		
-		helper.setTo(selfEmploye.getBody().getEmail());
 		
 		//Get the Leave Type Description using leave code
 		log.info("********fetch description from leavetype using leavecode :"+request.getLeaveCode());
 		helper.setSubject(restTemplate.exchange(leaveTypeBaseUrl+"/getDescription/"+request.getLeaveCode(), HttpMethod.GET, null, String.class).getBody());
 		InternetAddress[] ccRecipients = new InternetAddress[2]; // Assuming two recipients
 		 ccRecipients[0] = new InternetAddress(hrEmail);
-		 ccRecipients[1] = new InternetAddress(employee.getBody().getEmail());
+		 ccRecipients[1] = new InternetAddress(tokenEmployee.getBody().getEmail());
 		// Set the CC recipients in your email message
 		helper.setCc(ccRecipients);
-        helper.setSubject("Leave Email");
         if(file!=null)helper.addAttachment(file.getOriginalFilename(), new ByteArrayResource(file.getBytes()));
-        Context context=new Context();
-        context.setVariable("Manager", selfEmploye.getBody().getName());
-        context.setVariable("Employee", employee.getBody().getName());
         context.setVariable("leaveFromDate", request.getFromDate());
         context.setVariable("leaveEndDate", request.getToDate()	);
         context.setVariable("reason", request.getReason());
@@ -131,7 +151,7 @@ public class LeaveService {
         helper.setText(emailContent,true);
         javaMailSender.send(message);
         
-        log.info("******Email Sent Sucefully");
+        log.info("******Email Sent Sucefully manager : "+managerMail );
         return repo.save(leave);
 	}
 	
@@ -142,10 +162,11 @@ public class LeaveService {
 		return "Leave Deleted sucedfully";
 	}
 
-	public Object getAllEmployeesLeaveData() {
-		log.info("*********inside getAllEmployeesLeaveData ");
+	public Object getAllEmployeesLeaveData(HttpServletRequest request) {
+		Long managerId=Long.valueOf(jwtService.extractEmployeeId(request.getHeader(HttpHeaders.AUTHORIZATION).substring(7)));
+		log.info("*********inside getAllEmployeesLeaveData using ManagerId :  "+managerId);
 		
-		return repo.findAll();
+		return repo.findByManagerIdAndLeaveStatus(managerId,"PENDING");
 	}
 
 	public EmployeeLeave ApproveLeave(Long id) throws Exception {
@@ -155,7 +176,7 @@ public class LeaveService {
 		repo.save(leave);
 		log.info("******retrinve employee details ");
 		Long employeeId=leave.getEmployeeId();
-		ResponseEntity<employeeUserRequest> employee=restTemplate.exchange(employeeBaseUrl+"/getById"+employeeId, HttpMethod.GET, null, employeeUserRequest.class);
+		ResponseEntity<employeeUserRequest> employee=restTemplate.exchange(employeeBaseUrl+"/getById/"+employeeId, HttpMethod.GET, null, employeeUserRequest.class);
 		log.info("**********Sending Approved Email");
 		MimeMessage message=javaMailSender.createMimeMessage();
 		MimeMessageHelper helper=new MimeMessageHelper(message,true);
@@ -181,7 +202,7 @@ public class LeaveService {
 		repo.save(leave);
 		log.info("******retrinve employee details ");
 		Long employeeId=leave.getEmployeeId();
-		ResponseEntity<employeeUserRequest> employee=restTemplate.exchange(employeeBaseUrl+"/getById"+employeeId, HttpMethod.GET, null, employeeUserRequest.class);
+		ResponseEntity<employeeUserRequest> employee=restTemplate.exchange(employeeBaseUrl+"/getById/"+employeeId, HttpMethod.GET, null, employeeUserRequest.class);
 		log.info("**********Sending Approved Email");
 		MimeMessage message=javaMailSender.createMimeMessage();
 		MimeMessageHelper helper=new MimeMessageHelper(message,true);

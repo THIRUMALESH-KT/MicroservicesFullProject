@@ -24,15 +24,13 @@ public class Manager {
 	    private Long id;
 	    private String name;
 	    private Long managerId;
-	    private String accesCode;
 	    @ElementCollection(fetch = FetchType.EAGER)
 	    private List<Long> employeesIds;
 	    private String designation;
-	    private String password;
 	    private String email;
+	    private Long mobile;
 	    private String skill;
 	    private LocalDate startDate;
 	    private LocalDate endDate;
-	    private Long createdBy;
-	    private Long modifiedBy;
+	   
 }

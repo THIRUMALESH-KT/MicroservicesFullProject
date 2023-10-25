@@ -102,16 +102,28 @@ public class EmployeController {
 	
 	//Update By Id
 	
-	@PutMapping("/update/Personal/Details")
-	public  Object updateById(@RequestParam(required = false) Long id,@RequestBody(required = false) EmployeeMicroservices employee) throws Exception{
-		return "updateBYId working EmployeeController";
+	@PutMapping("/update/Personal/Details/{id}")
+	public  Object updateById(@PathVariable(required = false) Long id,@RequestBody(required = false) employeeUserRequest employee) throws Exception{
+		 Map<String, Object> map=new LinkedHashMap<>();
+		 log.info("**********inside updateById employeController");
+			map.put("Message : ", "Employee Details Updated sucefully ");
+			map.put("Result : ", employeeService.UpdateById(id,employee));
+			map.put("Status : ", HttpStatus.OK);
+			map.put("code : ", HttpStatus.OK.value());
+			return new ResponseEntity<>(map,HttpStatus.OK);
 	}
 	
 	//Delete By Id
-	@DeleteMapping("/deleteById")
-	public  Object deleteById(@RequestParam(required = false) Long id) throws Exception{
-		return "deleteByid working EmployeeController";
-	}
+	@DeleteMapping("/deleteById/{id}")
+	public  Object DeleteById(@PathVariable(required = false) Long id) throws Exception{
+		 log.info("**********inside DeleteById employeController");
+
+		Map<String, Object> map=new LinkedHashMap<>();
+			map.put("Message : ", "Employee Deleted sucefully");
+			map.put("Result : ", employeeService.DeleteById(id));
+			map.put("Status : ", HttpStatus.OK);
+			map.put("code : ", HttpStatus.OK.value());
+			return new ResponseEntity<>(map,HttpStatus.OK);	}
 	
 	@GetMapping("/getHr")
 	public EmployeeMicroservices getHr() throws Exception{
@@ -137,7 +149,7 @@ public class EmployeController {
 		
 	        @RequestParam Long userId, 
 	        @RequestParam String otp, 
-	        @RequestParam String newPassword) throws NotFoundException, TimeLimitExceededException {
+	        @RequestParam String newPassword) throws NotFoundException, Exception {
 		log.info("***********inside confirmPasswordReset EmployeeController");
 		return ResponseEntity.ok(employeeService.confirmPasswordReset(userId,otp, newPassword));
 	

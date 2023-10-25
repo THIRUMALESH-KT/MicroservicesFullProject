@@ -61,22 +61,26 @@ public class ManagerController {
 	
 	//Update By Id
 	
-	@PutMapping("/update")
-	public Object updateById(@RequestParam(required = false) Long id,@RequestBody(required = false) MangerUserRequest Manager) throws Exception{
-//		return employeeService.UpdateById(id,Manager);
-		return "updateById working ManagerController";
+	@PutMapping("/update/{id}")
+	public Object updateById(@PathVariable Long id,@RequestBody(required = false) MangerUserRequest Manager) throws Exception{
+		log.info("*********inside updateById manager Controller " );
+		return managerService.UpdateById(id,Manager);
 	}
 	
 	//Delete By Id
-	@DeleteMapping("/deleteById")
-	public Object deleteById(@RequestParam(required = false) Long id) throws Exception{
-//		return employeeService.DeleteById(id);
-		return "deleteById working ManagerController";
+	@DeleteMapping("/deleteById/{id}")
+	public Object deleteById(@PathVariable(required = false) Long id) throws Exception{
+		return managerService.DeleteById(id);
 	}
-	@PutMapping("/addEmployeeId")
-	public void AddEMployeeId(@RequestBody MangerUserRequest requset) throws Exception {
-		log.info("inside AddEMployeeId ManagerController");
+	@PutMapping("/addEmployeeId/{managerId}/{employeeId}")
+	public void AddEMployeeId(@PathVariable("managerId")Long managerId,@PathVariable("employeeId")Long employeeId) throws Exception {
+		log.info("*********inside AddEMployeeId ManagerController");
 
-		managerService.AddEmployeeId(requset);
+		managerService.AddEmployeeId(managerId,employeeId);
+	}
+	@PutMapping("/removeEmployeeId/{managerId}/{employeeId}")
+	public void RemoveEmployeeId(@PathVariable("managerId")Long managerId,@PathVariable("employeeId")Long employeeId) throws Exception {
+		log.info("******inside removeEmployeeId ManagerController ");
+		managerService.RemoveEmployeeId(managerId,employeeId);
 	}
 }

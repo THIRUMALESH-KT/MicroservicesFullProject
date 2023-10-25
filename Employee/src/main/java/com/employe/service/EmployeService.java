@@ -3,12 +3,11 @@ package com.employe.service;
 import java.net.URI;
 import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-
-import javax.naming.TimeLimitExceededException;
 
 import org.bouncycastle.asn1.x509.Time;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,12 +73,42 @@ public class EmployeService {
 	
 	
 	public Object DeleteById(Long id) throws Exception {
-		return null;
+		log.info("********inside DeleteById EmployeeService");
+		EmployeeMicroservices employee=employeeRepository.findByEmployeeId(id);
+		if(employee==null)throw new Exception("Id not Found ");
+		employee.setStatus("INACTIVE");
+		employee.setEndDate(LocalDate.now());
+		employee.setIsDeleted(true);
+		employeeRepository.save(employee);
+		log.info("********** manager Id "+id);
+		ResponseEntity<Object> ob = restTemplate.exchange(managerBaseUrl + "/deleteById/" +id,
+				HttpMethod.GET, null, Object.class);
+		
+		log.info("*********after calling manager getById endPoint");
+		return employee;
 	}
 
-	public EmployeeMicroservices UpdateById(Long id, EmployeeMicroservices employee) throws Exception {
-
-		return null;
+	public EmployeeMicroservices UpdateById(Long id, employeeUserRequest request) throws Exception {
+		log.info("******inside UpdateById employeeService ");
+		EmployeeMicroservices employee=employeeRepository.findByEmployeeId(id);
+		if(employee==null)throw new Exception("Id Not Found");
+		employee.setName(request.getName());
+		employee.setMobile(request.getMobile());
+		employee.setDesignation(request.getDesignation());
+		employee.setEmail(request.getEmail());
+		employee.setSkill(request.getSkill());
+		log.info("**********before calling manager service for removeEmployeeId ");
+		restTemplate.exchange(managerBaseUrl+"/removeEmployeeId/"+employee.getManagerId()+"/"+employee.getEmployeeId(), HttpMethod.PUT, null, Void.class);
+		employee.setManagerId(request.getManagerId());
+		log.info("********** manager Id "+request.getManagerId());
+		ResponseEntity<Object> ob = restTemplate.exchange(managerBaseUrl + "/getById/" + request.getManagerId(),
+				HttpMethod.GET, null, Object.class);
+		
+		log.info("*********after calling manager getById endPoint");
+		ResponseEntity<Object> manager=restTemplate.exchange(managerBaseUrl+"/update/"+id, HttpMethod.PUT, new HttpEntity<employeeUserRequest>(request), Object.class);
+		log.info("*********after updating manager Service ");
+		restTemplate.exchange(managerBaseUrl+"/addEmployeeId/"+employee.getManagerId()+"/"+employee.getEmployeeId(), HttpMethod.PUT, null, Void.class);
+		return employeeRepository.save(employee);
 	}
 
 	public EmployeeMicroservices GetById(Long id) throws Exception {
@@ -93,7 +122,7 @@ public class EmployeService {
 		EmployeeMicroservices employeeMicroservices = new EmployeeMicroservices(null, employe.getEmployeeId(),
 				 employe.getName(), employe.getMobile(), employe.getDesignation(),
 				 employe.getEmail(), employe.getStartDate(), null, employe.getSkill(),
-				employe.getManagerId());
+				employe.getManagerId(),"ACTIVE",false);
 		UserPrinciples userPrinciples =new UserPrinciples(employe.getEmployeeId(), employe.getPassword(), employe.getAccesCode());
 		if ((!employe.getDesignation().equalsIgnoreCase("MANAGER")) && (!employe.getDesignation().equalsIgnoreCase("HR")) && (!employe.getDesignation().equalsIgnoreCase("ADMIN"))) {
 			log.info("*********before calling manager getById endPoint");
@@ -153,7 +182,7 @@ public class EmployeService {
 		EmployeeMicroservices employee=employeeRepository.findByEmployeeId(userId);
 		if(employee==null)throw new UserPrincipalNotFoundException("invalid id ");
 		String mail=employee.getEmail();
-		String mobileNo=employee.getMobile();
+		Long mobileNo=employee.getMobile();
 		
 		// 2. Generate a random OTP (e.g., 6-digit code)
 	    String otp = generateRandomOTP();
@@ -200,29 +229,37 @@ public class EmployeService {
         return otp;
     }
 
-	public Object confirmPasswordReset(Long userId, String otp, String newPassword) throws NotFoundException, TimeLimitExceededException {
-
+	public Object confirmPasswordReset(Long userId, String otp, String newPassword) throws Exception {
+		
+		log.info("********inside confirmPasswordReset Employee Service");
 	    // 2. Verify the OTP
 	    if (isValidOTP(userId, otp)) {
 	        // 3. Reset the password for the user
-	    	UserPrinciples user=userPrinciplesRepository.findById(userId).orElseThrow(()->new NotFoundException());
+	    	log.info("******OTP is Valid ");
+	    	log.info("****fetching data using userId : "+userId+" otp : "+ otp);
+	    	UserPrinciples user=userPrinciplesRepository.findByEmployeeId(userId).orElseThrow(()->new Exception("User Not Found"));
 	    	user.setPassword(passwordEncoder.encode(newPassword) );
-	    	
+	    	log.info("*******after fetching UserDetails");
 	        // 4. Delete the used OTP from the database
-	        otpRepo.deleteByUserIdAndOtp(userId,otp);
+	    	OTPRecord otpRecord=otpRepo.findByUserIdAndOtp(userId, otp);
+	       otpRepo.delete(otpRecord);
+	        log.info("******after otp delete otp record");
 	        userPrinciplesRepository.save(user);
 	        return ResponseEntity.ok("Password reset successful.");
 	    } else {
+	    	log.info("*******OTP is not Valid");
 	        return new ResponseEntity<Object>("Invalid OTP. Password reset failed.",HttpStatus.BAD_REQUEST);
 	    }
 	}
 
-	private boolean isValidOTP(Long userId, String otp) throws TimeLimitExceededException {
+	private boolean isValidOTP(Long userId, String otp) throws Exception {
 		// Load the OTP record from the database by userId and OTP
-		Optional<OTPRecord> otpRecordOptional = otpRepo.findByUserIdAndOtp(userId, otp);
-
-		if (otpRecordOptional.isPresent()) {
-		    OTPRecord otpRecord = otpRecordOptional.get();
+		log.info("******inside isValidOTP");
+		OTPRecord otpRecordOptional = otpRepo.findByUserIdAndOtp(userId, otp);
+		log.info("********after fetching otp record");
+		if (otpRecordOptional!=null) {
+			log.info("**** opt record is not null");
+		    OTPRecord otpRecord = otpRecordOptional;
 
 		    // Check if the OTP is still valid (within the time limit)
 		    LocalDateTime currentTime = LocalDateTime.now();
@@ -236,12 +273,14 @@ public class EmployeService {
 		    } else {
 		        // OTP has expired
 		        // Handle the case where OTP is no longer valid
-		    	throw new TimeLimitExceededException();
+		    	otpRepo.delete(otpRecordOptional);
+		    	throw new Exception("OTP Has Expired");
 		    }
 		} else {
 		    // Invalid OTP
 		    // Handle the case where the OTP is not found in the database
-			throw new IllegalArgumentException("Invalid Otp");
+			log.info("****otp record is null");
+			throw new Exception("Invalid Otp");
 		}
 
 	}

@@ -32,6 +32,7 @@ public class EmployeeLeave {
 	private Long id;
 	private Long employeeId;
 	private String LeaveCode;
+	private Long totalDays;
 	private LocalDate fromDate;
 	private LocalDate toDate;
 	private String reason;
@@ -39,7 +40,7 @@ public class EmployeeLeave {
 	@Lob
 	private Blob file;
 	private  String leaveStatus;
-	
+	private Long managerId;
 	
 	
 	public void setLeaveFile(MultipartFile file) throws SerialException, SQLException, IOException {

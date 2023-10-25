@@ -10,9 +10,8 @@ import com.employe.entity.OTPRecord;
 @Repository
 public interface OTPRecordRepository extends JpaRepository<OTPRecord, Long> {
 
-	Optional<OTPRecord> findByUserIdAndOtp(Long userId, String otp);
+	OTPRecord findByUserIdAndOtp(Long userId, String otp);
 
 
-	void deleteByUserIdAndOtp(Long userId, String otp);
 
 }
