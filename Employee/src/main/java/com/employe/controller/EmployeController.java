@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import com.employe.entity.EmployeeMicroservices;
+import com.employe.entity.UserPrinciples;
 import com.employe.service.EmployeService;
 import com.employe.userRequest.employeeUserRequest;
 
@@ -54,6 +55,7 @@ public class EmployeController {
 	}
 	@PostMapping("/insert")
 	public ResponseEntity<Map<String, Object>> Insert(@RequestBody employeeUserRequest employe) throws Exception{
+		log.info("*********inside insert employeeController");
 		Map<String, Object> map=new HashMap<>();
 		map.put("result", employeeService.Insert(employe));
 		map.put("status", HttpStatus.OK);
@@ -61,6 +63,15 @@ public class EmployeController {
 	//	return employeeService.Insert(employe);
 	}
 	
+//	@PutMapping("/passwordCreateion")
+//	public ResponseEntity<Map<String, Object>> update(@RequestBody UserPrinciples employe) throws Exception{
+//		log.info("********inside update employeeController");
+//		Map<String, Object> map=new HashMap<>();
+//		map.put("result", employeeService.update(employe));
+//		map.put("status", HttpStatus.OK);
+//		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
+//	//	return employeeService.Insert(employe);
+//	}
 	@GetMapping("/getAllEmployes")
 	public ResponseEntity<Map<String, Object>> GetAllEmployes(HttpServletRequest request) throws Exception{
 		log.info("inside getAllEmployes EmployeController");
@@ -69,7 +80,7 @@ public class EmployeController {
 //        log.info("****after authentication getAllEmployes EmployeController");
         Map<String, Object> map=new LinkedHashMap<>();
 		map.put("Message : ", "All Employee Details Fetched Sucefullt ");
-		map.put("Result : ", employeeService.GetAllEmployes());
+		map.put("Result : ", employeeService.GetAllEmployes(request));
 		map.put("Status : ", HttpStatus.OK);
 		map.put("code : ", HttpStatus.OK.value());
 		return new ResponseEntity<>(map,HttpStatus.OK);
@@ -133,7 +144,7 @@ public class EmployeController {
 	}
 
 	@GetMapping("/getUser/{id}")
-	public ResponseEntity<Object> getUser(@PathVariable Long id) throws UserPrincipalNotFoundException{
+	public ResponseEntity<Object> getUser(@PathVariable Long id) throws Exception{
 		log.info("********inside getUser Employee Controller");
 		return ResponseEntity.ok(employeeService.getUser(id));
 	}

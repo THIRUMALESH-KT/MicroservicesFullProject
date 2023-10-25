@@ -36,6 +36,7 @@ import com.thoughtworks.xstream.converters.time.LocalDateConverter;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -68,6 +69,9 @@ public class EmployeService {
 	@Autowired
 	private JavaMailSender javaMailSender;
 
+	@Autowired
+	private JwtService jwtService;
+	
 	
 	public Object DeleteById(Long id) throws Exception {
 		return null;
@@ -129,9 +133,9 @@ public class EmployeService {
 		return "Employee Saved Sucessfully";
 	}
 
-	public Object GetAllEmployes() throws Exception {
-
-		return employeeRepository.findAll();
+	public Object GetAllEmployes(HttpServletRequest request) throws Exception {
+		Long managerId=Long.valueOf(jwtService.extractEmployeeId(request.getHeader(HttpHeaders.AUTHORIZATION).substring(7)));
+		return employeeRepository.findByManagerId(managerId);
 	}
 
 	public EmployeeMicroservices getHr() throws Exception {
@@ -242,8 +246,16 @@ public class EmployeService {
 
 	}
 
-	public Object getUser(Long id) throws UserPrincipalNotFoundException {
-		return userPrinciplesRepository.findById(id).orElseThrow(()->new UserPrincipalNotFoundException("Invalid Login Id"));
+	public Object getUser(Long id) throws Exception {
+		return userPrinciplesRepository.findById(id).orElseThrow(()->new Exception("Invalid Login Id"));
 	}
+
+	
+//	//Updating Employee
+//	
+//	public Object update(UserPrinciples principles) {
+//		principles.setPassword(passwordEncoder.encode(principles.getPassword()));
+//		return userPrinciplesRepository.save(principles);
+//	}
 
 }
