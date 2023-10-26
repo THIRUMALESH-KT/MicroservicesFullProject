@@ -93,6 +93,7 @@ public class EmployeController {
 	
 	//Get By Employe ID
 	//@Role(value = 1001)
+	//GetEmployee Details using id
 	@GetMapping("/getById/{id}")
 	public EmployeeMicroservices getById(@PathVariable(required = false) Long id) throws Exception{
 		
@@ -100,6 +101,13 @@ public class EmployeController {
 		return employeeService.GetById(id);
 	}
 	
+	
+	//GetEmployeeDetails using Token
+	@GetMapping("/getById")
+	public EmployeeMicroservices getById(HttpServletRequest request) {
+		log.info("*********inside getById Using Tokin employeeController");
+		return employeeService.GetById(request);
+	}
 	//Update By Id
 	
 	@PutMapping("/update/Personal/Details/{id}")

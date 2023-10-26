@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.auth.config.CustomUserDetails;
 import com.auth.config.JwtAuthenticationFilter;
+import com.auth.config.UserPrinciples;
 import com.auth.service.AuthService;
 import com.auth.service.JwtService;
 import com.auth.userRequest.LoginRequest;
@@ -47,6 +49,7 @@ public class AuthController {
 	@Autowired
 	private JwtService jwtService;
 	
+	
 	@GetMapping("/welcome")
 	public String welcome() {
 		log.info("*******inside Welcome AuthController");
@@ -65,11 +68,17 @@ public class AuthController {
 	}
 	//Generate Token
 	@GetMapping("/login")
-	public ResponseEntity<String> login(@RequestBody LoginRequest request)throws Exception{
+	public ResponseEntity<Map<String , Object>> login(@RequestBody LoginRequest request)throws Exception{
 		log.info("******** inside login AuthController");
+		
+		Map<String, Object> map=new LinkedHashMap<>();
+		map.put("Message  ", "Employee Loged in sucefully");
+	
 	Authentication authenticate=	authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getId(), request.getPassword()));
 	if(authenticate.isAuthenticated()) {
-		return new ResponseEntity<String>(authService.Login(request),HttpStatus.OK);
+		map.put("Token  ", authService.Login(request));
+		map.put("AccessLevel  ", userDetailsService.loadUserByUsername(String.valueOf(request.getId())).getAuthorities().toArray()[0].toString().substring(5));
+		return ResponseEntity.ok(map);
 	}
 	else {
 		throw new RuntimeException("Invalid User Details");

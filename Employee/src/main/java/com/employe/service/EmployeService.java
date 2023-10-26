@@ -84,7 +84,7 @@ public class EmployeService {
 		ResponseEntity<Object> ob = restTemplate.exchange(managerBaseUrl + "/deleteById/" +id,
 				HttpMethod.GET, null, Object.class);
 		
-		log.info("*********after calling manager getById endPoint");
+		log.info("*********after calling manager deleteById endPoint");
 		return employee;
 	}
 
@@ -287,6 +287,10 @@ public class EmployeService {
 
 	public Object getUser(Long id) throws Exception {
 		return userPrinciplesRepository.findById(id).orElseThrow(()->new Exception("Invalid Login Id"));
+	}
+
+	public EmployeeMicroservices GetById(HttpServletRequest request) {
+		return employeeRepository.findByEmployeeId(Long.valueOf(jwtService.extractEmployeeId(request.getHeader(HttpHeaders.AUTHORIZATION).substring(7))));
 	}
 
 	

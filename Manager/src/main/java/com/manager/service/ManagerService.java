@@ -27,6 +27,7 @@ public class ManagerService {
 	public Object DeleteById(Long id) throws Exception {
 		Manager employee=managerRepository.findByManagerId(id);
 		if(employee!=null) {
+			
 		managerRepository.delete(employee);
 		}
 		return employee;

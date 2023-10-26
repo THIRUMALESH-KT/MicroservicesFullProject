@@ -144,4 +144,25 @@ public class LeaveController {
 		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);
 	}
 	
+	@GetMapping("/myLeaves")
+	public ResponseEntity<Map<String , Object>> MyLeaves(HttpServletRequest request) {
+		log.info("**********inside MyLeaves LeaveController");
+		Map<String , Object> map=new LinkedHashMap<>();
+		map.put("Message : ", "Leave Data fetched succesfully");
+		map.put("Result : ",leaveService.MyLeaves(request));
+		map.put("Status : ", HttpStatus.OK);
+		map.put("Code : ", HttpStatus.OK.value());
+		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);
+	}
+	
+	@DeleteMapping("/deleteMyLeave/{id}")
+	public ResponseEntity<Map<String, Object>> deleteMyLeave(@PathVariable Long id) throws Exception{
+		log.info("**********inside deleteMyLeave LeaveController");
+		Map<String , Object> map=new LinkedHashMap<>();
+		map.put("Message : ", "Your Leave Deleted  succesfully");
+		map.put("Result : ",leaveService.deleteMyLeave(id));
+		map.put("Status : ", HttpStatus.OK);
+		map.put("Code : ", HttpStatus.OK.value());
+		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);
+	}
 }

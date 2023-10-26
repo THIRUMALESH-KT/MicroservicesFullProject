@@ -12,6 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.auth.exception.CustomAccessDeniedException;
+import com.auth.exception.GlobalExceptionHandular;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,7 +53,9 @@ public class SecurityConfig {
 		            throw new CustomAccessDeniedException("Access Denied: " + accessDeniedException.getMessage());
 
 			    })
-				.authenticationEntryPoint(authEntryPoint))
+				
+				.authenticationEntryPoint(authEntryPoint)
+				)
 				.authenticationProvider(authProvider)
 
 				.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)

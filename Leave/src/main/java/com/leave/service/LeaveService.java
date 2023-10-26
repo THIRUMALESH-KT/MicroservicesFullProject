@@ -218,6 +218,19 @@ public class LeaveService {
 		return leave;
 	}
 
+
+	public Object MyLeaves(HttpServletRequest request) {
+		log.info("*******inside MyLeaves Leavie Service");
+		return repo.findByEmployeeId(Long.valueOf(jwtService.extractEmployeeId(request.getHeader(HttpHeaders.AUTHORIZATION).substring(7))));
+	}
+
+
+	public Object deleteMyLeave(Long id) throws Exception {
+		EmployeeLeave employeeLeave=repo.findById(id).orElseThrow(()->new Exception("Leave Id Not Found"));
+		repo.delete(employeeLeave);
+		return employeeLeave;
+	}
+	
 	
 
 }

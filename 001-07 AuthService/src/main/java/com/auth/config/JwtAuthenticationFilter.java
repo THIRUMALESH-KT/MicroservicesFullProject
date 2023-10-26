@@ -12,6 +12,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.auth.exception.CustomAccessDeniedException;
 import com.auth.service.JwtService;
 
 import io.jsonwebtoken.Claims;
@@ -39,6 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		log.info("**********inside doFilterInternal JwtAuthenitcationFilter AuthService" );
+		try {
 		String header=request.getHeader("Authorization");
 		if(header==null || !header.startsWith("Bearer ")) {
 			filterChain.doFilter(request, response);
@@ -49,13 +51,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 		String UserName=jwtService.extractEmployeeId(Token);
 		
 			UserDetails userDetails=userDetailsService.loadUserByUsername(UserName);
+			
 			UsernamePasswordAuthenticationToken authtoken=new UsernamePasswordAuthenticationToken(UserName, userDetails.getPassword(), userDetails.getAuthorities());
+			if(!authtoken.isAuthenticated()) {
+				log.info("*********User authentication failed" );
+				throw new Exception();
+			}
 			System.out.println(authtoken);
 			authtoken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 			SecurityContextHolder.getContext().setAuthentication(authtoken);
 		
 		log.info("tokn : "+authtoken);
 		filterChain.doFilter(request, response);
+		}catch(Exception e) {
+			throw new CustomAccessDeniedException(e.getLocalizedMessage());
+		}
 	}
 
 }

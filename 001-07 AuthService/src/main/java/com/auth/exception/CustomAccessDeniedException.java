@@ -1,7 +1,13 @@
 package com.auth.exception;
 
-public class CustomAccessDeniedException extends RuntimeException {
+import org.springframework.security.core.AuthenticationException;
+
+public class CustomAccessDeniedException extends AuthenticationException    {
     public CustomAccessDeniedException(String message) {
-        super(message);
+    	super(message);
     }
+
+
+	
+	
 }
