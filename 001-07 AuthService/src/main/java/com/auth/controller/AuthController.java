@@ -62,9 +62,14 @@ public class AuthController {
 	}
 	//Register User
 	@PostMapping("/addEmployee")
-	public  Object addEmployee(@RequestBody employeeUserRequest employe) {
+	public  ResponseEntity<Map<String , Object>> addEmployee(@RequestBody employeeUserRequest employe) {
 		log.info("*******inside addEmployee AuthController");
-		return authService.addEmployee(employe);
+		Map< String , Object>map=new HashMap<>();
+		map.put("Message " , "Employee Created sucefully");
+		map.put("result " , authService.addEmployee(employe));
+		map.put("status ", HttpStatus.CREATED);
+		map.put("status Code ", HttpStatus.CREATED.value());
+		return ResponseEntity.ok(map);
 	}
 	//Generate Token
 	@GetMapping("/login")

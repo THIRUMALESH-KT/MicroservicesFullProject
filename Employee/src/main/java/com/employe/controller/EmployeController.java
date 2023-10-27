@@ -72,12 +72,23 @@ public class EmployeController {
 //		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
 //	//	return employeeService.Insert(employe);
 //	}
-	@GetMapping("/getAllEmployes")
-	public ResponseEntity<Map<String, Object>> GetAllEmployes(HttpServletRequest request) throws Exception{
-		log.info("inside getAllEmployes EmployeController");
+	@GetMapping("/getAllEmployesUnderMe")
+	public ResponseEntity<Map<String, Object>> getAllEmployesUnderMe(HttpServletRequest request) throws Exception{
+		log.info("inside getAllEmployesUnderMe EmployeController");
 //        String authServiceUrl = "http://localhost:8087/auth/authenticate"; 
 //        ResponseEntity<String> authServiceResponse = restTemplate.exchange(authServiceUrl, HttpMethod.GET, new HttpEntity<>(request), String.class);
 //        log.info("****after authentication getAllEmployes EmployeController");
+        Map<String, Object> map=new LinkedHashMap<>();
+		map.put("Message : ", "All Employee Details Fetched Sucefullt ");
+		map.put("Result : ", employeeService.getAllEmployesUnderMe(request));
+		map.put("Status : ", HttpStatus.OK);
+		map.put("code : ", HttpStatus.OK.value());
+		return new ResponseEntity<>(map,HttpStatus.OK);
+	}
+	@GetMapping("/getAllEmployees")
+	public ResponseEntity<Map<String, Object>> GetAllEmployes(HttpServletRequest request) throws Exception{
+		log.info("inside getAllEmployes EmployeController");
+
         Map<String, Object> map=new LinkedHashMap<>();
 		map.put("Message : ", "All Employee Details Fetched Sucefullt ");
 		map.put("Result : ", employeeService.GetAllEmployes(request));
@@ -85,7 +96,6 @@ public class EmployeController {
 		map.put("code : ", HttpStatus.OK.value());
 		return new ResponseEntity<>(map,HttpStatus.OK);
 	}
-	
 	
 	//insert Employe into data base
 	

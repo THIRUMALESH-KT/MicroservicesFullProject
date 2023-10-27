@@ -37,9 +37,9 @@ public class SecurityConfig {
 				authorizweRequests
 				.requestMatchers("/auth/welcome","/auth/login","/auth/hello","/employee/welcome","/auth/authenticate/**","/leave/welcome")
 				.permitAll()
-				.requestMatchers("/auth/addEmployee","employee/deleteById")
+				.requestMatchers("/auth/addEmployee","/employee/getAllEmployees","employee/deleteById/**")
 				.hasRole("1007")
-				.requestMatchers("/employee/getAllEmployes","/manager/getAllEmploye","/leave/applyLeave/**","/leave/allEmployeesLeaveData","/leave/approveLeave/**","/leave/rejectLeave/**","/leaveType/addLeaveType")
+				.requestMatchers("/employee/getAllEmployesUnderMe","/manager/getAllEmploye","/leave/applyLeave/**","/leave/allEmployeesLeaveData","/leave/approveLeave/**","/leave/rejectLeave/**","/leaveType/addLeaveType")
 				.hasRole("1005")
 				.requestMatchers("/employee/getById","/employee/update/Personal/Details","/employee/password/reset/request","/employee/password/reset/confirm","/leave/applyLeave","/leave/delete/**","/leaveType/getAllLeaveTypes")
 				.hasRole("1001")

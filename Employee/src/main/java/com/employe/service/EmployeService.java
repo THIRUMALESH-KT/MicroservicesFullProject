@@ -82,7 +82,7 @@ public class EmployeService {
 		employeeRepository.save(employee);
 		log.info("********** manager Id "+id);
 		ResponseEntity<Object> ob = restTemplate.exchange(managerBaseUrl + "/deleteById/" +id,
-				HttpMethod.GET, null, Object.class);
+				HttpMethod.DELETE, null, Object.class);
 		
 		log.info("*********after calling manager deleteById endPoint");
 		return employee;
@@ -117,8 +117,11 @@ public class EmployeService {
 		return  employee;
 	}
 
-	public Object Insert(employeeUserRequest employe) throws Exception {
+	public EmployeeMicroservices Insert(employeeUserRequest employe) throws Exception {
 		log.info("************inside Insert EmployeeService");
+		if(employeeRepository.findByEmployeeId(employe.getEmployeeId())!=null) throw new Exception(" Ducblicate Employee ");
+			
+		
 		EmployeeMicroservices employeeMicroservices = new EmployeeMicroservices(null, employe.getEmployeeId(),
 				 employe.getName(), employe.getMobile(), employe.getDesignation(),
 				 employe.getEmail(), employe.getStartDate(), null, employe.getSkill(),
@@ -133,12 +136,12 @@ public class EmployeService {
 			log.info("*********after calling manager getById endPoint");
 
 			if (ob.getBody() != null) {
-				employeeRepository.save(employeeMicroservices);
+			EmployeeMicroservices employee=	employeeRepository.save(employeeMicroservices);
 				userPrinciplesRepository.save(userPrinciples);
 
-				 restTemplate.exchange(managerBaseUrl+"/addEmployeeId", HttpMethod.PUT,new
-				 HttpEntity<employeeUserRequest>(employe), Void.class);
-				return "Employee Saved ";
+				 restTemplate.exchange(managerBaseUrl+"/addEmployeeId/"+employe.getManagerId()+"/"+employe.getEmployeeId(), HttpMethod.PUT,
+				 null, Void.class);
+				return employee;
 			} else {
 				log.error("********giver Manager id not found");
 				throw new Exception("Manager Id not Found");
@@ -149,20 +152,20 @@ public class EmployeService {
 		} else if(employe.getDesignation().equalsIgnoreCase("MANAGER")) {
 			employeeMicroservices.setManagerId(employe.getEmployeeId());
 			restTemplate.exchange(managerBaseUrl+"/insert", HttpMethod.POST,new HttpEntity<employeeUserRequest>(employe), Void.class);
-			employeeRepository.save(employeeMicroservices);
+			EmployeeMicroservices employee= employeeRepository.save(employeeMicroservices);
 			userPrinciplesRepository.save(userPrinciples);
 
-			return "Employee Saved ";
-		}else if(employe.getDesignation().equalsIgnoreCase("HR")| employe.getDesignation().equalsIgnoreCase("ADMIN")) {
+			return employee;
+		}else if (employe.getDesignation().equalsIgnoreCase("HR")| employe.getDesignation().equalsIgnoreCase("ADMIN")) {
 			employeeMicroservices.setManagerId(employe.getEmployeeId());
-			employeeRepository.save(employeeMicroservices);
+		EmployeeMicroservices empoloyee=	employeeRepository.save(employeeMicroservices);
 			userPrinciplesRepository.save(userPrinciples);
-			return "Employee saved sucessfully";
+			return empoloyee;
 		}
-		return "Employee Saved Sucessfully";
+		return employeeMicroservices;
 	}
 
-	public Object GetAllEmployes(HttpServletRequest request) throws Exception {
+	public Object getAllEmployesUnderMe(HttpServletRequest request) throws Exception {
 		Long managerId=Long.valueOf(jwtService.extractEmployeeId(request.getHeader(HttpHeaders.AUTHORIZATION).substring(7)));
 		return employeeRepository.findByManagerId(managerId);
 	}
@@ -286,11 +289,19 @@ public class EmployeService {
 	}
 
 	public Object getUser(Long id) throws Exception {
+		if(employeeRepository.findByEmployeeId(id).getIsDeleted()) throw new Exception("Employee Inactive");
+			
+		
+		
 		return userPrinciplesRepository.findById(id).orElseThrow(()->new Exception("Invalid Login Id"));
 	}
 
 	public EmployeeMicroservices GetById(HttpServletRequest request) {
 		return employeeRepository.findByEmployeeId(Long.valueOf(jwtService.extractEmployeeId(request.getHeader(HttpHeaders.AUTHORIZATION).substring(7))));
+	}
+
+	public Object GetAllEmployes(HttpServletRequest request) {
+		return employeeRepository.findAll();
 	}
 
 	

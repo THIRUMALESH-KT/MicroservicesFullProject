@@ -1,8 +1,10 @@
 package com.leave.controller;
 
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.leave.entity.EmployeeLeave;
+import com.leave.entity.EmployeeLeaveSummary;
 import com.leave.service.LeaveService;
 import com.leave.userRequest.UserLeaveRequest;
 
@@ -49,7 +52,7 @@ public class LeaveController {
 		EmployeeLeave leave= leaveService.ApplyLeave(reqest,request.getHeader("Authorization"),employeeId,file);
 		map.put("for employe : ",leave.getEmployeeId());
 		if(leave.getToDate()!=null) {
-			map.put("total Days : ",  ChronoUnit.DAYS.between(leave.getFromDate(), leave.getToDate()));
+			map.put("total Days : ",  leave.getTotalDays());
 			map.put("from : ", leave.getFromDate()	);
 			map.put("toDate", leave.getToDate());
 			
@@ -69,7 +72,7 @@ public class LeaveController {
 	EmployeeLeave leave=	leaveService.ApplyLeave(leaveRequest, httpRequest.getHeader("Authorization"), employeeId, file);
 	map.put("for employe : ",leave.getEmployeeId());
 	if(leave.getToDate()!=null) {
-		map.put("total Days : ",  ChronoUnit.DAYS.between(leave.getFromDate(), leave.getToDate()));
+		map.put("total Days : ", leave.getTotalDays());
 		map.put("from : ", leave.getFromDate()	);
 		map.put("toDate", leave.getToDate());
 		
@@ -109,7 +112,7 @@ public class LeaveController {
 		EmployeeLeave leave=leaveService.ApproveLeave(id);
 		map.put("for employe : ",leave.getEmployeeId());
 		if(leave.getToDate()!=null) {
-			map.put("total Days : ",  ChronoUnit.DAYS.between(leave.getFromDate(), leave.getToDate()));
+			map.put("total Days : ",  leave.getTotalDays());
 			map.put("from : ", leave.getFromDate()	);
 			map.put("toDate", leave.getToDate());
 			
@@ -130,7 +133,7 @@ public class LeaveController {
 		EmployeeLeave leave=leaveService.RejectLeave(id);
 		map.put("for employe : ",leave.getEmployeeId());
 		if(leave.getToDate()!=null) {
-			map.put("total Days : ",  ChronoUnit.DAYS.between(leave.getFromDate(), leave.getToDate()));
+			map.put("total Days : ",  leave.getTotalDays());
 			map.put("from : ", leave.getFromDate()	);
 			map.put("toDate", leave.getToDate());
 			
@@ -156,18 +159,24 @@ public class LeaveController {
 	}
 	
 	@DeleteMapping("/deleteMyLeave/{id}")
-	public ResponseEntity<Map<String, Object>> deleteMyLeave(@PathVariable Long id) throws Exception{
+	public ResponseEntity<Map<String, Object>> deleteMyLeave(@PathVariable Long id,HttpServletRequest request) throws Exception{
 		log.info("**********inside deleteMyLeave LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
 		map.put("Message : ", "Your Leave Deleted  succesfully");
-		map.put("Result : ",leaveService.deleteMyLeave(id));
+		map.put("Result : ",leaveService.deleteMyLeave(id,request));
 		map.put("Status : ", HttpStatus.OK);
 		map.put("Code : ", HttpStatus.OK.value());
 		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);
 	}
-	@GetMapping("/takenLeaves")
-	public Object takenLeaves() {
+	@GetMapping("/takenLeaves/{employeeId}/{leaveStatus}/{requeriedMonth}")
+	public ResponseEntity<Map<String , Object>> takenLeaves(@PathVariable Long employeeId,@PathVariable String leaveStatus,@PathVariable LocalDate requeriedMonth) {
 		log.info("********inside takenLeaves LeaveController");
-		return leaveService.takenLeaves();
+		Map<String , Object> map=new LinkedHashMap<>();
+		map.put("message ", employeeId +" "+ leaveStatus+" Data Fetched sucefully ");
+		map.put("Date " , requeriedMonth);
+		List<EmployeeLeaveSummary> list=leaveService.takenLeaves(employeeId,leaveStatus,requeriedMonth);
+		map.put("Result ", list.get(0));
+		//map.put("Total Leave Days ", list.get(2));
+		return ResponseEntity.ok(map);
 	}
 }
