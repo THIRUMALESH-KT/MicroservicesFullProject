@@ -230,6 +230,12 @@ public class LeaveService {
 		repo.delete(employeeLeave);
 		return employeeLeave;
 	}
+
+
+	public Object takenLeaves() {
+		log.info("*********inside takenLeaves leaveService");
+		return repo.findApprovedLeaveDaysInCurrentMonth(103);
+	}
 	
 	
 

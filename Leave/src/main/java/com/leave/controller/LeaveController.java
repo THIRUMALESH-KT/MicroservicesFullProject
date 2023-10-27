@@ -165,4 +165,9 @@ public class LeaveController {
 		map.put("Code : ", HttpStatus.OK.value());
 		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);
 	}
+	@GetMapping("/takenLeaves")
+	public Object takenLeaves() {
+		log.info("********inside takenLeaves LeaveController");
+		return leaveService.takenLeaves();
+	}
 }
