@@ -27,7 +27,7 @@ public class LeaveTypeController {
 	@Autowired
 	private LeaveTypeService leaveTypeService;
 	@PostMapping("/addLeaveType")
-	public ResponseEntity<Map<String, Object>> CreateLeaveType(@RequestBody LeaveTypeUserRequest leaveTypeUserRequest,HttpServletRequest httprequest){
+	public ResponseEntity<Map<String, Object>> CreateLeaveType(@RequestBody LeaveTypeUserRequest leaveTypeUserRequest,HttpServletRequest httprequest) throws Exception{
 		log.info("inside CreateLeaveType LeaveTypeController");
 		Map<String, Object> map	=new HashMap<>();
 		map.put("Message : ", "Leave Type Created sucefully");

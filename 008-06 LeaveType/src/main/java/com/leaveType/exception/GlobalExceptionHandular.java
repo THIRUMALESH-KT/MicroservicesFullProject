@@ -14,8 +14,10 @@ public class GlobalExceptionHandular {
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<Map<String , Object>> Exception(Exception ex) {
 		Map<String , Object> map=new  HashMap<>();
+		map.put("message ", "Failed");
 		map.put("resutl", ex.getLocalizedMessage());
 		map.put("status", HttpStatus.BAD_REQUEST);
+		map.put("status code ", HttpStatus.BAD_REQUEST.value());
 		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.BAD_REQUEST);
 	}
 }

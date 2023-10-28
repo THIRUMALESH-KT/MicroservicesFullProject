@@ -21,8 +21,9 @@ public class LeaveTypeService {
 	private LeaveTypeRepositore leaveTypeRepositore;
 	@Autowired 
 	private JwtService jwtService;
-	public Object CreateLeaveType(LeaveTypeUserRequest leaveTypeUserRequest, HttpServletRequest httprequest) {
+	public Object CreateLeaveType(LeaveTypeUserRequest leaveTypeUserRequest, HttpServletRequest httprequest) throws Exception {
 		log.info("*********inside CreateLeaveType LeaveTypeService");
+		if(leaveTypeRepositore.findByLeaveCode(leaveTypeUserRequest.getLeaveCode())!=null) throw new Exception("Dublicate Leave Code ");
 		Long employeeId=Long.valueOf(jwtService.extractEmployeeId( httprequest.getHeader("Authorization").substring(7)));
 		LeaveType leaveType =new LeaveType(null, leaveTypeUserRequest.getLeaveCode(), leaveTypeUserRequest.getDescription(), LocalDate.now(), employeeId);
 		return leaveTypeRepositore.save(leaveType);

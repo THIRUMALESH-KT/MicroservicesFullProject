@@ -172,11 +172,23 @@ public class LeaveController {
 	public ResponseEntity<Map<String , Object>> takenLeaves(@PathVariable Long employeeId,@PathVariable String leaveStatus,@PathVariable LocalDate requeriedMonth) {
 		log.info("********inside takenLeaves LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
-		map.put("message ", employeeId +" "+ leaveStatus+" Data Fetched sucefully ");
+		map.put("message ","Employee :"+ employeeId +" "+ leaveStatus+"Leave Data Fetched sucefully ");
 		map.put("Date " , requeriedMonth);
-		List<EmployeeLeaveSummary> list=leaveService.takenLeaves(employeeId,leaveStatus,requeriedMonth);
-		map.put("Result ", list.get(0));
+		List<Long> list=leaveService.takenLeaves(employeeId,leaveStatus,requeriedMonth);
+		map.put("Result ", list);
 		//map.put("Total Leave Days ", list.get(2));
 		return ResponseEntity.ok(map);
 	}
+	@GetMapping("/monthlyLeave/{employeeId}/{leaveStatus}/{requeriedMonth}")
+	public ResponseEntity<Map<String , Object>> monthlyLeave(@PathVariable Long employeeId,@PathVariable String leaveStatus,@PathVariable LocalDate requeriedMonth) {
+		log.info("********inside takenLeaves LeaveController");
+		Map<String , Object> map=new LinkedHashMap<>();
+		map.put("message ","Employee :"+ employeeId +" "+ leaveStatus+"Leave Data Fetched sucefully ");
+		map.put("Date " , requeriedMonth);
+		List<EmployeeLeave> list=leaveService.monthlyLeave(employeeId,leaveStatus,requeriedMonth);
+		map.put("Result ", list);
+		//map.put("Total Leave Days ", list.get(2));
+		return ResponseEntity.ok(map);
+	}
+	
 }

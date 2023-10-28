@@ -242,13 +242,54 @@ public class LeaveService {
 		return employeeLeave;
 	}
 
-	public List<EmployeeLeaveSummary> takenLeaves(Long employeeId,String status,LocalDate requeriedMonth) {
+	public List<Long> takenLeaves(Long employeeId,String status,LocalDate requeriedMonth) {
 		log.info("*********inside takenLeaves leaveService");
 		LocalDate startDate = requeriedMonth.minusMonths(1).withDayOfMonth(26);
-		LocalDate endDate = LocalDate.now().withDayOfMonth(25);
-		List<EmployeeLeaveSummary> ob = repo.findApprovedLeaveDaysInCurrentMonth(employeeId,status, startDate, endDate);
+		LocalDate endDate = requeriedMonth.withDayOfMonth(25);
+		List<Long> ob = repo.findApprovedLeaveDaysInCurrentMonth(employeeId,status, startDate, endDate);
 		log.info("*******" + ob);
 		return ob;
 	}
+
+	public List<EmployeeLeave> monthlyLeave(Long employeeId, String leaveStatus, LocalDate requiredMonth) {
+	    log.info("*********inside monthlyLeave leaveService");
+
+	    LocalDate startDate = requiredMonth.minusMonths(1).withDayOfMonth(26);
+	    LocalDate endDate = requiredMonth.withDayOfMonth(25);
+
+	    List<EmployeeLeave> leaveRecords = repo.findCurrentLeaves(employeeId, leaveStatus, startDate, endDate);
+
+	    // Modify the results to match your requirement
+	    List<EmployeeLeave> modifiedResults = new ArrayList<>();
+
+	    for (EmployeeLeave leave : leaveRecords) {
+	        LocalDate fromDate = leave.getFromDate();
+	        LocalDate toDate = leave.getToDate();
+
+	        // from date 2023-09-24 before startDate 
+	        // Adjust startDate if it's within the leave period
+	        if (fromDate.isBefore(startDate)) {
+	            fromDate=startDate;
+	        }
+
+	        // Adjust endDate if it's within the leave period
+	        //toDate 2023-09-28 after endDate
+	        if (toDate.isAfter(endDate) ) {
+	            toDate = endDate;
+	        }
+
+	        // Add the modified leave record to the results
+	        if (startDate.isBefore(endDate)) {
+	            EmployeeLeave modifiedLeave = new EmployeeLeave(leave); // Create a copy of the original leave
+	            modifiedLeave.setFromDate(startDate);
+	            modifiedLeave.setToDate(endDate);
+	            modifiedResults.add(modifiedLeave);
+	        }
+	    }
+
+	    log.info("*******" + modifiedResults);
+	    return modifiedResults;
+	}
+
 
 }

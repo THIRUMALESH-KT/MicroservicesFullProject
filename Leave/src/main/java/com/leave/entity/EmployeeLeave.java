@@ -31,7 +31,7 @@ public class EmployeeLeave {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private Long employeeId;
-	private String LeaveCode;
+	private String leaveCode;
 	private Long totalDays;
 	private LocalDate fromDate;
 	private LocalDate toDate;
@@ -42,9 +42,23 @@ public class EmployeeLeave {
 	private  String leaveStatus;
 	private Long managerId;
 	
-	
+	 public EmployeeLeave(EmployeeLeave original) {
+	        this.employeeId = original.getEmployeeId();
+	        this.leaveCode = original.getLeaveCode();
+	        this.totalDays = original.getTotalDays();
+	        this.fromDate = original.getFromDate();
+	        this.toDate = original.getToDate();
+	        this.reason = original.getReason();
+	        this.appliedBy = original.getAppliedBy();
+	        this.file = original.getFile();
+	        this.leaveStatus = original.getLeaveStatus();
+	        this.managerId = original.getManagerId();
+	    }
 	public void setLeaveFile(MultipartFile file) throws SerialException, SQLException, IOException {
 		
 		this.file=new SerialBlob(file.getBytes());
 	}
+
+
+	
 }

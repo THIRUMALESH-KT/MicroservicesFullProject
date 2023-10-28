@@ -30,28 +30,47 @@ public interface LeaveRepository extends JpaRepository<EmployeeLeave, Long> {
 //            + "GROUP BY employee_id", nativeQuery = true)
 	
 	
-//	@Query(value = "SELECT employee_id, SUM((DATEDIFF(LEAST(to_date, :endDate), GREATEST(from_date, :startDate)))+1) AS leaveDays "
-//			+ "FROM employee_leave e " + // Added space here
-//			"WHERE employee_id = :employeeId " + "AND leave_status = :leaveStatus " + "AND to_date >= :startDate "
-//			+ "AND from_date <= :endDate " + "GROUP BY employee_id", nativeQuery = true)
-//	Object findApprovedLeaveDaysInCurrentMonth(Long employeeId,String leaveStatus, LocalDate startDate, LocalDate endDate);
-	
-	@Query(value = "SELECT employee_leave, SUM((DATEDIFF(LEAST(e.to_date, :endDate), GREATEST(e.from_date, :startDate))+1)) AS leaveDays " +
-	        "FROM employee_leave e " +
-	        "WHERE e.employee_id = :employeeId " +
-	        "AND e.leave_status = :leaveStatus " +
-	        "AND e.to_date >= :startDate " +
-	        "AND e.from_date <= :endDate " +
-	        "GROUP BY e.employee_id", nativeQuery = true)
-	List<EmployeeLeaveSummary> findApprovedLeaveDaysInCurrentMonth(
+	@Query(value = "SELECT SUM((DATEDIFF(LEAST(to_date, :endDate), GREATEST(from_date, :startDate)))+1) AS leaveDays " +
+	        "FROM employee_leave " +
+	        "WHERE employee_id = :employeeId " +
+	        "AND leave_status = :leaveStatus " +
+	        "AND to_date >= :startDate " +
+	        "AND from_date <= :endDate", nativeQuery = true)
+	List<Long> findApprovedLeaveDaysInCurrentMonth(
 	        Long employeeId,
 	        String leaveStatus,
 	        LocalDate startDate,
 	        LocalDate endDate);
 
 
+
+
+
+
 	List<Object> findByEmployeeId(Long valueOf);
 
 	List<Object> findByManagerIdAndLeaveStatus(Long managerId, String string);
+
+
+
+
+
+	@Query(value = "SELECT * " +
+	        "FROM employee_leave " +
+	        "WHERE employee_id = :employeeId " +
+	        "AND leave_status = :leaveStatus " +
+	        "AND to_date >= :startDate " +
+	        "AND from_date <= :endDate", nativeQuery = true)
+	List<EmployeeLeave> findCurrentMonthlyLeaves(Long employeeId, String leaveStatus, LocalDate startDate,
+			LocalDate endDate);
+	
+	@Query(value = "SELECT * " +
+	        "FROM employee_leave " +
+	        "WHERE employee_id = :employeeId " +
+	        "AND leave_status = :leaveStatus " +
+	        "AND to_date >= :startDate " +
+	        "AND from_date <= :endDate", nativeQuery = true)
+	List<EmployeeLeave> findCurrentLeaves(Long employeeId, String leaveStatus, LocalDate startDate, LocalDate endDate);
+
 
 }

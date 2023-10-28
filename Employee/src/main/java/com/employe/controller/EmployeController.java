@@ -63,15 +63,7 @@ public class EmployeController {
 	//	return employeeService.Insert(employe);
 	}
 	
-//	@PutMapping("/passwordCreateion")
-//	public ResponseEntity<Map<String, Object>> update(@RequestBody UserPrinciples employe) throws Exception{
-//		log.info("********inside update employeeController");
-//		Map<String, Object> map=new HashMap<>();
-//		map.put("result", employeeService.update(employe));
-//		map.put("status", HttpStatus.OK);
-//		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
-//	//	return employeeService.Insert(employe);
-//	}
+
 	@GetMapping("/getAllEmployesUnderMe")
 	public ResponseEntity<Map<String, Object>> getAllEmployesUnderMe(HttpServletRequest request) throws Exception{
 		log.info("inside getAllEmployesUnderMe EmployeController");

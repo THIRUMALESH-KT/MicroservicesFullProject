@@ -1,6 +1,7 @@
 package com.auth.exception;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -27,14 +28,21 @@ public class GlobalExceptionHandular extends ResponseEntityExceptionHandler {
 		log.info(" ********inside handleAccessDeniedException");
         // You can log the exception or perform additional actions here.
 		Map<String, Object> map=new HashMap<>();
-		map.put("result ", "failed");
-		map.put("message : ", "Authorized persons only can access this page");
+		map.put("message  ", "failed");
+		map.put("result  ", "Authorized persons only can access this page");
+		map.put("status " , HttpStatus.BAD_REQUEST);
+		map.put("status code ", HttpStatus.BAD_REQUEST.value());
 		return new ResponseEntity<Map<String, Object>>(map,HttpStatus.FORBIDDEN);
     }
 	@ExceptionHandler(Exception.class)
-	public Object Exception(Exception ex) {
+	public ResponseEntity<Map<String , Object>> Exception(Exception ex) {
 		log.info("****** inside Exception");
-		return ex.getMessage();
+		Map<String , Object > map=new LinkedHashMap<>();
+		map.put("message " , "Failed");
+		map.put("result ", ex.getMessage());
+		map.put("status " , HttpStatus.BAD_REQUEST);
+		map.put("status code ", HttpStatus.BAD_REQUEST.value());
+		return ResponseEntity.ok(map);
 	}
 
 	
