@@ -52,7 +52,6 @@ public class LeaveController {
 		EmployeeLeave leave= leaveService.ApplyLeave(reqest,request.getHeader("Authorization"),employeeId,file);
 		map.put("for employe : ",leave.getEmployeeId());
 		if(leave.getToDate()!=null) {
-			map.put("total Days : ",  leave.getTotalDays());
 			map.put("from : ", leave.getFromDate()	);
 			map.put("toDate", leave.getToDate());
 			
@@ -72,7 +71,6 @@ public class LeaveController {
 	EmployeeLeave leave=	leaveService.ApplyLeave(leaveRequest, httpRequest.getHeader("Authorization"), employeeId, file);
 	map.put("for employe : ",leave.getEmployeeId());
 	if(leave.getToDate()!=null) {
-		map.put("total Days : ", leave.getTotalDays());
 		map.put("from : ", leave.getFromDate()	);
 		map.put("toDate", leave.getToDate());
 		
@@ -112,7 +110,6 @@ public class LeaveController {
 		EmployeeLeave leave=leaveService.ApproveLeave(id);
 		map.put("for employe : ",leave.getEmployeeId());
 		if(leave.getToDate()!=null) {
-			map.put("total Days : ",  leave.getTotalDays());
 			map.put("from : ", leave.getFromDate()	);
 			map.put("toDate", leave.getToDate());
 			
@@ -133,7 +130,6 @@ public class LeaveController {
 		EmployeeLeave leave=leaveService.RejectLeave(id);
 		map.put("for employe : ",leave.getEmployeeId());
 		if(leave.getToDate()!=null) {
-			map.put("total Days : ",  leave.getTotalDays());
 			map.put("from : ", leave.getFromDate()	);
 			map.put("toDate", leave.getToDate());
 			
@@ -174,9 +170,10 @@ public class LeaveController {
 		Map<String , Object> map=new LinkedHashMap<>();
 		map.put("message ","Employee :"+ employeeId +" "+ leaveStatus+"Leave Data Fetched sucefully ");
 		map.put("Date " , requeriedMonth);
-		List<Long> list=leaveService.takenLeaves(employeeId,leaveStatus,requeriedMonth);
+		Float list=leaveService.takenLeaves(employeeId,leaveStatus,requeriedMonth);
 		map.put("Result ", list);
-		//map.put("Total Leave Days ", list.get(2));
+		map.put("Status : ", HttpStatus.OK);
+		map.put("Code : ", HttpStatus.OK.value());
 		return ResponseEntity.ok(map);
 	}
 	@GetMapping("/monthlyLeave/{employeeId}/{leaveStatus}/{requeriedMonth}")
@@ -185,9 +182,12 @@ public class LeaveController {
 		Map<String , Object> map=new LinkedHashMap<>();
 		map.put("message ","Employee :"+ employeeId +" "+ leaveStatus+"Leave Data Fetched sucefully ");
 		map.put("Date " , requeriedMonth);
+		map.put("LeaveStatus ", leaveStatus);
 		List<EmployeeLeave> list=leaveService.monthlyLeave(employeeId,leaveStatus,requeriedMonth);
 		map.put("Result ", list);
-		//map.put("Total Leave Days ", list.get(2));
+		map.put("ToalLeaves ", leaveService.takenLeaves(employeeId, leaveStatus, requeriedMonth));
+		map.put("Status : ", HttpStatus.OK);
+		map.put("Code : ", HttpStatus.OK.value());
 		return ResponseEntity.ok(map);
 	}
 	

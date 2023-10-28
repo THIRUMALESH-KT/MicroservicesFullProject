@@ -53,15 +53,36 @@ public class LeaveService {
 	public EmployeeLeave ApplyLeave(UserLeaveRequest request, String tokenHeader, Long paramEmployeeId,
 			MultipartFile file) throws Exception {
 		log.info("*************inside applyLeave LeaveService");
-		EmployeeLeave leave = new EmployeeLeave(null, null, request.getLeaveCode(), null, request.getFromDate(),
-				request.getToDate(), request.getReason(), null, null, "PENDING", null);
-		// setting file
-		if (leave.getToDate() != null) {
-			leave.setTotalDays(ChronoUnit.DAYS.between(leave.getFromDate(), leave.getToDate())+1);
-
-		} else {
-			leave.setTotalDays(1l);
+		 boolean isHalfDayLeave=false;
+		if(request.getIsHalfDayLeave()!=null) {
+			isHalfDayLeave= request.getIsHalfDayLeave();// You need to define this in your UserLeaveRequest
+	    log.info("********* isHalfDayLeave : "+isHalfDayLeave);
 		}
+	    LocalDate fromDate = request.getFromDate();
+	    LocalDate toDate = request.getToDate();
+
+	    if (isHalfDayLeave) {
+	        // Handle half-day leave
+	    	log.info("******* Employee Taken HalfDay");
+	        if (fromDate != null) {
+	            // If both fromDate and toDate are specified for half-day leave, adjust them as needed
+	            fromDate = fromDate.atTime(12, 0).toLocalDate(); // Set the time to noon
+	            log.info("*********fromDate "+fromDate);
+	            if(toDate !=null ) {
+	            toDate = toDate.atTime(12, 0).toLocalDate(); // Set the time to noon
+	            log.info("*********todate : "+toDate);
+	            }
+	        }
+	    }
+		EmployeeLeave leave = new EmployeeLeave(null, null, request.getLeaveCode(),request.getFromDate(),
+			request.getToDate(),	request.getReason(), null, null, "PENDING", null,false);
+		leave.setIsHalfDayLeave(isHalfDayLeave);
+		if(leave.getToDate()==null)leave.setToDate(leave.getFromDate());
+		if(leave.getFromDate()==null)leave.setFromDate(leave.getToDate());
+		
+		
+		
+		
 		if (file != null)
 			leave.setLeaveFile(file);
 		String token = tokenHeader.substring(7);
@@ -138,15 +159,10 @@ public class LeaveService {
 		context.setVariable("leaveFromDate", request.getFromDate());
 		context.setVariable("leaveEndDate", request.getToDate());
 		context.setVariable("reason", request.getReason());
-		LocalDate fromDate = request.getFromDate();
-		LocalDate toDate = request.getToDate();
-		boolean isHalfDay = request.isHalfDay(); // Check the half-day flag
-		if (isHalfDay) {
+		if (isHalfDayLeave) {
 
 			context.setVariable("numberOfDays", "HalfDay");
 		} else if (fromDate != null && toDate != null) {
-			long numberOfDays = leave.getTotalDays();
-			context.setVariable("numberOfDays", numberOfDays);
 
 		} else if (fromDate != null) {
 			context.setVariable("numberOfDays", 01);
@@ -242,11 +258,11 @@ public class LeaveService {
 		return employeeLeave;
 	}
 
-	public List<Long> takenLeaves(Long employeeId,String status,LocalDate requeriedMonth) {
+	public Float takenLeaves(Long employeeId,String status,LocalDate requeriedMonth) {
 		log.info("*********inside takenLeaves leaveService");
 		LocalDate startDate = requeriedMonth.minusMonths(1).withDayOfMonth(26);
 		LocalDate endDate = requeriedMonth.withDayOfMonth(25);
-		List<Long> ob = repo.findApprovedLeaveDaysInCurrentMonth(employeeId,status, startDate, endDate);
+		Float ob = repo.findApprovedLeaveDaysInCurrentMonth(employeeId,status, startDate, endDate);
 		log.info("*******" + ob);
 		return ob;
 	}
@@ -266,30 +282,38 @@ public class LeaveService {
 	        LocalDate fromDate = leave.getFromDate();
 	        LocalDate toDate = leave.getToDate();
 
-	        // from date 2023-09-24 before startDate 
-	        // Adjust startDate if it's within the leave period
-	        if (fromDate.isBefore(startDate)) {
-	            fromDate=startDate;
-	        }
+	        // Check if the leave period overlaps with your specified month
+	        if ((fromDate.isBefore(endDate)||fromDate.isEqual(endDate))&& (toDate == null || toDate.isAfter(startDate) || toDate.isEqual(startDate))) {
+	            // Adjust the fromDate if it's before the start of the specified month
+	            if (fromDate.isBefore(startDate)||fromDate.isEqual(startDate)) {
+	                fromDate = startDate;
+	            }
 
-	        // Adjust endDate if it's within the leave period
-	        //toDate 2023-09-28 after endDate
-	        if (toDate.isAfter(endDate) ) {
-	            toDate = endDate;
-	        }
+	            // Adjust the toDate if it's after the end of the specified month
+	            if (toDate != null && (toDate.isAfter(endDate)|| toDate.isEqual(endDate))) {
+	                toDate = endDate;
+	            }
 
-	        // Add the modified leave record to the results
-	        if (startDate.isBefore(endDate)) {
-	            EmployeeLeave modifiedLeave = new EmployeeLeave(leave); // Create a copy of the original leave
-	            modifiedLeave.setFromDate(startDate);
-	            modifiedLeave.setToDate(endDate);
+	            // Create a copy of the original leave with adjusted dates
+	            EmployeeLeave modifiedLeave = new EmployeeLeave(leave);
+	            modifiedLeave.setFromDate(fromDate);
+	            if (toDate != null) {
+	                modifiedLeave.setToDate(toDate);
+	            }
 	            modifiedResults.add(modifiedLeave);
+	        }
+	       
+	        else {
+	            // If the leave does not overlap with the specified month, add it as-is
+	            modifiedResults.add(leave);
 	        }
 	    }
 
 	    log.info("*******" + modifiedResults);
 	    return modifiedResults;
 	}
+
+
 
 
 }

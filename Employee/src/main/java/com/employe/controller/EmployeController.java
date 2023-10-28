@@ -80,16 +80,17 @@ public class EmployeController {
 	@GetMapping("/getAllEmployees")
 	public ResponseEntity<Map<String, Object>> GetAllEmployes(HttpServletRequest request) throws Exception{
 		log.info("inside getAllEmployes EmployeController");
-
         Map<String, Object> map=new LinkedHashMap<>();
 		map.put("Message : ", "All Employee Details Fetched Sucefullt ");
 		map.put("Result : ", employeeService.GetAllEmployes(request));
 		map.put("Status : ", HttpStatus.OK);
 		map.put("code : ", HttpStatus.OK.value());
 		return new ResponseEntity<>(map,HttpStatus.OK);
+		 
 	}
 	
 	//insert Employe into data base
+	
 	
 	
 	
@@ -170,5 +171,7 @@ public class EmployeController {
 		log.info("********inside getUser Employee Controller");
 		return ResponseEntity.ok(employeeService.getUser(id));
 	}
+	
+	
 	
 }

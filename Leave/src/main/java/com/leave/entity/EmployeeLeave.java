@@ -32,7 +32,6 @@ public class EmployeeLeave {
 	private Long id;
 	private Long employeeId;
 	private String leaveCode;
-	private Long totalDays;
 	private LocalDate fromDate;
 	private LocalDate toDate;
 	private String reason;
@@ -41,11 +40,11 @@ public class EmployeeLeave {
 	private Blob file;
 	private  String leaveStatus;
 	private Long managerId;
-	
-	 public EmployeeLeave(EmployeeLeave original) {
+    private Boolean isHalfDayLeave; 
+	public EmployeeLeave(EmployeeLeave original) {
+		 	this.id=original.getId();
 	        this.employeeId = original.getEmployeeId();
 	        this.leaveCode = original.getLeaveCode();
-	        this.totalDays = original.getTotalDays();
 	        this.fromDate = original.getFromDate();
 	        this.toDate = original.getToDate();
 	        this.reason = original.getReason();
@@ -53,6 +52,7 @@ public class EmployeeLeave {
 	        this.file = original.getFile();
 	        this.leaveStatus = original.getLeaveStatus();
 	        this.managerId = original.getManagerId();
+	        this.isHalfDayLeave=original.isHalfDayLeave;
 	    }
 	public void setLeaveFile(MultipartFile file) throws SerialException, SQLException, IOException {
 		
