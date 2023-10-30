@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,6 +37,7 @@ import com.employe.userRequest.employeeUserRequest;
 
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,13 +58,9 @@ public class EmployeController {
 		return "This is welcome page";
 	}
 	@PostMapping("/insert")
-	@CustomAnnotation(allowedRoles = {"1007"})
-	public ResponseEntity<Map<String, Object>> Insert(@RequestBody employeeUserRequest employe) throws Exception{
+	public ResponseEntity<Object> Insert(@Validated @RequestBody employeeUserRequest employe) throws Exception{
 		log.info("*********inside insert employeeController");
-		Map<String, Object> map=new HashMap<>();
-		map.put("result", employeeService.Insert(employe));
-		map.put("status", HttpStatus.OK);
-		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
+		return new ResponseEntity<Object>(employeeService.Insert(employe),HttpStatus.OK);
 	//	return employeeService.Insert(employe);
 	}
 	
@@ -120,10 +118,10 @@ public class EmployeController {
 	}
 	//Update By Id
 	
-	@PutMapping("/update/Personal/Details/{id}")
-	@CustomAnnotation(allowedRoles = {"1001","1002","1003","1004","1005","1006","1007"})
+	@PutMapping("/update/Employee/Details/{id}")
+	@CustomAnnotation(allowedRoles = {"1004","1005","1006","1007"})
 
-	public  Object updateById(@PathVariable(required = false) Long id,@RequestBody(required = false) employeeUserRequest employee) throws Exception{
+	public  Object updateById(@PathVariable(required = false) Long id,@Validated @RequestBody(required = false) employeeUserRequest employee) throws Exception{
 		 Map<String, Object> map=new LinkedHashMap<>();
 		 log.info("**********inside updateById employeController");
 			map.put("Message : ", "Employee Details Updated sucefully ");
@@ -157,7 +155,7 @@ public class EmployeController {
 	@PostMapping("/password/reset/request")
 	@CustomAnnotation(allowedRoles = {"1001","1002","1003","1004","1005","1006","1007"})
 
-	public ResponseEntity<Object> initiatePasswordReset(@RequestParam Long userId) throws UserPrincipalNotFoundException, MessagingException {
+	public ResponseEntity<Object> initiatePasswordReset(@RequestParam(required = true) Long userId) throws UserPrincipalNotFoundException, MessagingException {
 		log.info("**********inside initiatePasswordReset EmployeeController");
 		EmployeeMicroservices employee=employeeService.initiatePasswordReset( userId);
 		Map<String , Object> map=new LinkedHashMap<>();
@@ -173,9 +171,9 @@ public class EmployeController {
 
 	public ResponseEntity<Object> confirmPasswordReset(
 		
-	        @RequestParam Long userId, 
-	        @RequestParam String otp, 
-	        @RequestParam String newPassword) throws NotFoundException, Exception {
+	        @RequestParam(required = true) Long userId, 
+	        @RequestParam(required = true) String otp, 
+	        @RequestParam(required = true) String newPassword) throws NotFoundException, Exception {
 		log.info("***********inside confirmPasswordReset EmployeeController");
 		return ResponseEntity.ok(employeeService.confirmPasswordReset(userId,otp, newPassword));
 	

@@ -33,12 +33,15 @@ public class AuthService {
 		log.info("*********inside welcome AuthService");
 		return restTemplate.getForObject(employeeBasePath+"/welcome",String.class);
 	}
-	public Object addEmployee(employeeUserRequest employe) {
+	public Object addEmployee(employeeUserRequest employe) throws Exception {
 		
 		log.info("*********inside addEmployee AuthService");
 		employe.setPassword(passwordEncoder.encode(employe.getPassword()));
-		  ResponseEntity<Object> response = restTemplate.exchange(employeeBasePath + "/insert", HttpMethod.POST, new HttpEntity<>(employe), Object.class);
+		ResponseEntity<Object> response = null ;
+		
+					response = restTemplate.exchange(employeeBasePath + "/insert", HttpMethod.POST, new HttpEntity<>(employe), Object.class);
 
+log.info("*******after calling Exmployee insert endpoint");
 		  System.out.println("**************"+response.getBody()+"**********************");
 		  return response.getBody();
 	}

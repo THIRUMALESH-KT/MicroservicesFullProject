@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,7 @@ import com.leaveType.service.LeaveTypeService;
 import com.leaveType.userRequest.LeaveTypeUserRequest;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -29,7 +31,7 @@ public class LeaveTypeController {
 	private LeaveTypeService leaveTypeService;
 	@PostMapping("/addLeaveType")
 	@CustomAnnotation(allowedRoles = {"1004","1005","1006","1007"})
-	public ResponseEntity<Map<String, Object>> CreateLeaveType(@RequestBody LeaveTypeUserRequest leaveTypeUserRequest,HttpServletRequest httprequest) throws Exception{
+	public ResponseEntity<Map<String, Object>> CreateLeaveType(@Validated @RequestBody LeaveTypeUserRequest leaveTypeUserRequest,HttpServletRequest httprequest) throws Exception{
 		log.info("inside CreateLeaveType LeaveTypeController");
 		Map<String, Object> map	=new HashMap<>();
 		map.put("Message : ", "Leave Type Created sucefully");

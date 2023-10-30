@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.manager.entity.Manager;
+import com.manager.exception.UserNotFountException;
 import com.manager.repository.ManagerRepository;
 import com.manager.userRequest.MangerUserRequest;
 

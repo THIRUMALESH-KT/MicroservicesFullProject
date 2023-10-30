@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,6 +33,7 @@ import com.auth.userRequest.LoginRequest;
 import com.auth.userRequest.employeeUserRequest;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -63,7 +65,7 @@ public class AuthController {
 	}
 	//Register User
 	@PostMapping("/addEmployee")
-	public  ResponseEntity<Map<String , Object>> addEmployee(@RequestBody employeeUserRequest employe) {
+	public  ResponseEntity<Map<String , Object>> addEmployee(@Valid @RequestBody employeeUserRequest employe) throws Exception {
 		log.info("*******inside addEmployee AuthController");
 		Map< String , Object>map=new HashMap<>();
 		map.put("Message " , "Employee Created sucefully");

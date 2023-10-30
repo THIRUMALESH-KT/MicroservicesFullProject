@@ -26,6 +26,8 @@ import com.employe.dto.UserDetails;
 import com.employe.entity.EmployeeMicroservices;
 import com.employe.entity.OTPRecord;
 import com.employe.entity.UserPrinciples;
+import com.employe.exception.DublicateEmployeeException;
+import com.employe.exception.EmployeeNotFoundException;
 import com.employe.repository.EmployeeRepository;
 import com.employe.repository.OTPRecordRepository;
 import com.employe.repository.UserPrinciplesRepository;
@@ -119,7 +121,7 @@ public class EmployeService {
 
 	public EmployeeMicroservices Insert(employeeUserRequest employe) throws Exception {
 		log.info("************inside Insert EmployeeService");
-		if(employeeRepository.findByEmployeeId(employe.getEmployeeId())!=null) throw new Exception(" Ducblicate Employee ");
+		if(employeeRepository.findByEmployeeId(employe.getEmployeeId())!=null) throw new DublicateEmployeeException(" Ducblicate Employee ");
 			
 		
 		EmployeeMicroservices employeeMicroservices = new EmployeeMicroservices(null, employe.getEmployeeId(),
@@ -135,19 +137,14 @@ public class EmployeService {
 					HttpMethod.GET, null, Object.class);
 			log.info("*********after calling manager getById endPoint");
 
-			if (ob.getBody() != null) {
+		
 			EmployeeMicroservices employee=	employeeRepository.save(employeeMicroservices);
 				userPrinciplesRepository.save(userPrinciples);
 
 				 restTemplate.exchange(managerBaseUrl+"/addEmployeeId/"+employe.getManagerId()+"/"+employe.getEmployeeId(), HttpMethod.PUT,
 				 null, Void.class);
 				return employee;
-			} else {
-				log.error("********giver Manager id not found");
-				throw new Exception("Manager Id not Found");
-				// return new ResponseEntity<Object>("Manager id not Found
-				// ",HttpStatus.BAD_REQUEST);
-			}
+		
 
 		} else if(employe.getDesignation().equalsIgnoreCase("MANAGER")) {
 			employeeMicroservices.setManagerId(employe.getEmployeeId());

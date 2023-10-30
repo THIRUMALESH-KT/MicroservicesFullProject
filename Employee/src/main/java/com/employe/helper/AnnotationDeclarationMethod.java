@@ -55,7 +55,7 @@ public class AnnotationDeclarationMethod {
 	    CustomAnnotation customAnnotation = method.getAnnotation(CustomAnnotation.class);
 
 	    // Check if the annotation is present
-	    if (customAnnotation != null) {
+	    if (customAnnotation != null && request.getHeader(HttpHeaders.AUTHORIZATION) !=null) {
 	        String[] customList = customAnnotation.allowedRoles();
 	        log.info(customList.toString());
 	        log.info("New List: " + Arrays.toString(customList));
@@ -67,7 +67,8 @@ public class AnnotationDeclarationMethod {
 	        } else {
 	            throw new UnAuthorizedException("Authorize Persion only can Access This Page");
 	        }
-	    } else {
+	    }
+	    else {
 	        // Handle the case when the annotation is not present
 	        // You can choose to proceed or handle it differently based on your requirements.
 	        return pjp.proceed();

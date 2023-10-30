@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
+import com.leave.exception.UnAuthorizedException;
 import com.leave.service.JwtService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -63,7 +64,7 @@ public class AnnotationDeclarationMethod {
 	        if (Arrays.asList(customList).contains(expectedValue)) {
 	            return pjp.proceed();
 	        } else {
-	            throw new Exception("You don't have authority");
+	            throw new UnAuthorizedException("You don't have authority");
 	        }
 	    } else {
 	        // Handle the case when the annotation is not present

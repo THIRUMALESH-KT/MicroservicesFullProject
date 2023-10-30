@@ -10,6 +10,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,6 +29,7 @@ import com.leave.service.LeaveService;
 import com.leave.userRequest.UserLeaveRequest;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -48,7 +50,7 @@ public class LeaveController {
 	
 	@PostMapping("/applyLeave/{employeeId}")
 	@CustomAnnotation(allowedRoles = {"1001","1002","1003","1004","1005","1006","1007"})
-	public ResponseEntity<Map<String,Object>> applyLeave(@RequestBody(required = false) UserLeaveRequest reqest,HttpServletRequest request ,@PathVariable Long employeeId,@RequestParam(name="file",required = false)MultipartFile file)throws Exception{
+	public ResponseEntity<Map<String,Object>> applyLeave( @Valid @RequestBody(required = false) UserLeaveRequest reqest,HttpServletRequest request ,@PathVariable Long employeeId,@RequestParam(name="file",required = false)MultipartFile file)throws Exception{
 		log.info("************inside ApplyLeave LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
 		EmployeeLeave leave= leaveService.ApplyLeave(reqest,request.getHeader("Authorization"),employeeId,file);
@@ -67,7 +69,8 @@ public class LeaveController {
 		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
 	}
 	@PostMapping("/applyLeave")
-	public ResponseEntity<Map<String , Object>> applyLeave(@RequestBody UserLeaveRequest leaveRequest,@RequestParam(name = "file",required = false)MultipartFile file, HttpServletRequest httpRequest,@PathVariable(required = false) Long employeeId)throws Exception{
+	@CustomAnnotation(allowedRoles = {"1001","1002","1003","1004","1005","1006","1007"})
+	public ResponseEntity<Map<String , Object>> applyLeave(@Valid @RequestBody UserLeaveRequest leaveRequest,@RequestParam(name = "file",required = false)MultipartFile file, HttpServletRequest httpRequest,@PathVariable(required = false) Long employeeId)throws Exception{
 		log.info("**********inside applyLeave2 LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
 	EmployeeLeave leave=	leaveService.ApplyLeave(leaveRequest, httpRequest.getHeader("Authorization"), employeeId, file);

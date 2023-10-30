@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -29,4 +30,15 @@ public class GlobalExceptionHandular {
 		return new ResponseEntity<Map<String, Object>>(map1,HttpStatus.UNAUTHORIZED);
     		
 	}
+    @ExceptionHandler({MethodArgumentNotValidException.class,})
+   public Map<String,String> validateException(MethodArgumentNotValidException ex){
+	 
+    	Map<String,String> errorsMap=new HashMap<>();
+    	errorsMap.put("result", "failed");
+        ex.getBindingResult().getFieldErrors().forEach(error->{
+            errorsMap.put(error.getField(),error.getDefaultMessage());
+        });
+        errorsMap.put("status", String.valueOf(HttpStatus.BAD_REQUEST.value()));
+        return errorsMap;
+    }
 }

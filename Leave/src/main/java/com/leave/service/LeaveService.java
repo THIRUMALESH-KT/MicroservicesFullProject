@@ -99,7 +99,7 @@ public class LeaveService {
 		Context context = new Context();
 
 		if (paramEmployeeId != null) {
-			employee = restTemplate.exchange(employeeBaseUrl + "/getById/" + paramEmployeeId, HttpMethod.GET, null,
+			employee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + paramEmployeeId, HttpMethod.GET, null,
 					employeeUserRequest.class);
 			if (employee.getBody() == null)
 				throw new Exception("Employee id not Found");
@@ -108,7 +108,7 @@ public class LeaveService {
 			leave.setManagerId(employee.getBody().getManagerId());
 			// extracting manager details
 
-			tokenEmployee = restTemplate.exchange(employeeBaseUrl + "/getById/" + tokenId, HttpMethod.GET, null,
+			tokenEmployee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + tokenId, HttpMethod.GET, null,
 					employeeUserRequest.class);
 			if (tokenEmployee.getBody() == null)
 				throw new Exception(" Id not found");
@@ -121,9 +121,9 @@ public class LeaveService {
 		}
 		if (paramEmployeeId == null) {
 
-			tokenEmployee = restTemplate.exchange(employeeBaseUrl + "/getById/" + tokenId, HttpMethod.GET, null,
+			tokenEmployee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + tokenId, HttpMethod.GET, null,
 					employeeUserRequest.class);
-			employee = restTemplate.exchange(employeeBaseUrl + "/getById/" + tokenEmployee.getBody().getManagerId(),
+			employee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + tokenEmployee.getBody().getManagerId(),
 					HttpMethod.GET, null, employeeUserRequest.class);
 			leave.setManagerId(tokenEmployee.getBody().getManagerId());
 			leave.setEmployeeId(tokenEmployee.getBody().getEmployeeId());

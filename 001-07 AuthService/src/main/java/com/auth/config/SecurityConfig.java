@@ -64,10 +64,13 @@ public class SecurityConfig {
 				)
 				.sessionManagement(session->
 				session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//				.exceptionHandling(ex->ex.accessDeniedHandler(accessDeniedException)).
+				.exceptionHandling(ex->
+				ex.authenticationEntryPoint(authEntryPoint))
+//				.exceptionHandling(ex->ex.accessDeniedHandler(accessDeniedException))
 //                sessionManagement(ses->ses.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 //				
 //				
+				
 				.authenticationProvider(authProvider)
 
 				.addFilterBefore(authenticationFilter(), UsernamePasswordAuthenticationFilter.class)
