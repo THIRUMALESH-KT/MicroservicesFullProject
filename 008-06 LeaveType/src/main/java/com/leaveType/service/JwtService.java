@@ -12,9 +12,13 @@ import io.jsonwebtoken.security.Keys;
 public class JwtService {
 	private static String Key = "345ev4sf094rjdn49ru49oifdsnf4e49tr8e9jvonfv0ew9eur04uoijd3049";
 
-	public String extractEmployeeId(String token) {
+public int extractEmployeeId(String token) {
 		
-		return extractClaims(token).getSubject();
+		return (int) extractClaims(token).get("username");
+	}
+
+	public String GetRole(String token) {
+		return (String) extractClaims(token).get("role");
 	}
 
 	public static Key getSignKey() {

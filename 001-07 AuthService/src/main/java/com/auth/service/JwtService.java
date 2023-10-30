@@ -12,6 +12,8 @@ import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2Res
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.auth.config.UserPrinciples;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -24,10 +26,14 @@ public class JwtService {
 
 	private static final String key = "345ev4sf094rjdn49ru49oifdsnf4e49tr8e9jvonfv0ew9eur04uoijd3049";
 
-	public String generteToken(String userName) {
+	public String generteToken(UserPrinciples user) {
 		log.info("*********inside generateToken");
 		Map<String, Object> claims = new HashMap<>();
-		return Jwts.builder().setClaims(new HashMap<>()).setSubject(userName)
+		claims.put("username", user.getEmployeeId());
+		claims.put("role",user.getAccessCode());
+		
+		return Jwts.builder().setClaims(claims)
+				
 				.setIssuedAt(new Date(System.currentTimeMillis()))
 				.setExpiration(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(50))).signWith(getSignKey())
 				.compact();
@@ -40,9 +46,9 @@ public class JwtService {
 		return Keys.hmacShaKeyFor(keybytes);
 	}
 
-	public String extractEmployeeId(String token) {
+	public int extractEmployeeId(String token) {
 		log.info("*******inside extractEmployeeId JwtService ");
-		return extractClaims(token).getSubject();
+		return   (int) extractClaims(token).get("username");
 	}
 
 	public Claims extractClaims(String token) {

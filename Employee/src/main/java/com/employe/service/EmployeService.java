@@ -297,6 +297,8 @@ public class EmployeService {
 	}
 
 	public EmployeeMicroservices GetById(HttpServletRequest request) {
+		log.info("*********inside getById employeeService");
+		log.info(request.getHeader(HttpHeaders.AUTHORIZATION));
 		return employeeRepository.findByEmployeeId(Long.valueOf(jwtService.extractEmployeeId(request.getHeader(HttpHeaders.AUTHORIZATION).substring(7))));
 	}
 

@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.leave.entity.EmployeeLeave;
 import com.leave.entity.EmployeeLeaveSummary;
+import com.leave.helper.CustomAnnotation;
 import com.leave.service.LeaveService;
 import com.leave.userRequest.UserLeaveRequest;
 
@@ -46,6 +47,7 @@ public class LeaveController {
 	
 	
 	@PostMapping("/applyLeave/{employeeId}")
+	@CustomAnnotation(allowedRoles = {"1001","1002","1003","1004","1005","1006","1007"})
 	public ResponseEntity<Map<String,Object>> applyLeave(@RequestBody(required = false) UserLeaveRequest reqest,HttpServletRequest request ,@PathVariable Long employeeId,@RequestParam(name="file",required = false)MultipartFile file)throws Exception{
 		log.info("************inside ApplyLeave LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
@@ -103,6 +105,8 @@ public class LeaveController {
 		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);
 	}
 	@PutMapping("/approveLeave/{id}")
+	@CustomAnnotation(allowedRoles = {"1005","1006","1007"})
+
 	public ResponseEntity<Map<String, Object>> ApproveLeave(@PathVariable Long id) throws Exception{
 		log.info("**********inside ApproveLeave LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
@@ -123,6 +127,8 @@ public class LeaveController {
 		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);
 	}
 	@PutMapping("/rejectLeave/{id}")
+	@CustomAnnotation(allowedRoles = {"1005","1006","1007"})
+
 	public ResponseEntity<Map<String, Object>> RejectLeave(@PathVariable Long id) throws Exception{
 		log.info("**********inside RejectLeave LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
@@ -144,6 +150,8 @@ public class LeaveController {
 	}
 	
 	@GetMapping("/myLeaves")
+	@CustomAnnotation(allowedRoles = {"1001","1002","1003","1004","1005","1006","1007"})
+
 	public ResponseEntity<Map<String , Object>> MyLeaves(HttpServletRequest request) {
 		log.info("**********inside MyLeaves LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
@@ -155,6 +163,8 @@ public class LeaveController {
 	}
 	
 	@DeleteMapping("/deleteMyLeave/{id}")
+	@CustomAnnotation(allowedRoles = {"1005","1006","1007"})
+
 	public ResponseEntity<Map<String, Object>> deleteMyLeave(@PathVariable Long id,HttpServletRequest request) throws Exception{
 		log.info("**********inside deleteMyLeave LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
@@ -165,6 +175,8 @@ public class LeaveController {
 		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);
 	}
 	@GetMapping("/takenLeaves/{employeeId}/{leaveStatus}/{requeriedMonth}")
+	@CustomAnnotation(allowedRoles = {"1005","1006","1007"})
+
 	public ResponseEntity<Map<String , Object>> takenLeaves(@PathVariable Long employeeId,@PathVariable String leaveStatus,@PathVariable LocalDate requeriedMonth) {
 		log.info("********inside takenLeaves LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
@@ -177,6 +189,8 @@ public class LeaveController {
 		return ResponseEntity.ok(map);
 	}
 	@GetMapping("/monthlyLeave/{employeeId}/{leaveStatus}/{requeriedMonth}")
+	@CustomAnnotation(allowedRoles = {"1005","1006","1007"})
+
 	public ResponseEntity<Map<String , Object>> monthlyLeave(@PathVariable Long employeeId,@PathVariable String leaveStatus,@PathVariable LocalDate requeriedMonth) {
 		log.info("********inside takenLeaves LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();

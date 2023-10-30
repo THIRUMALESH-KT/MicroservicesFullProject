@@ -1,32 +1,32 @@
 package com.leave.exception;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+
+import com.leave.helper.ConstantValues;
+
 
 
 @RestControllerAdvice
 public class GlobalExceptionHandular {
 
-	@ExceptionHandler(CustomAccessDeniedException.class)
-	@ResponseStatus(HttpStatus.FORBIDDEN)
-    public ResponseEntity<Map<String, Object>> handleAccessDeniedException(CustomAccessDeniedException ex) {
-        // You can log the exception or perform additional actions here.
-		Map<String, Object> map=new HashMap<>();
-		map.put("result ", "failed");
-		map.put("message : ", "Authorized persons only can access this page");
-		return new ResponseEntity<Map<String, Object>>(map,HttpStatus.FORBIDDEN);
-    }
-	@ExceptionHandler(Exception.class)
-	public ResponseEntity<Map<String , Object>> Exception(Exception ex) {
-		Map<String , Object> map=new  HashMap<>();
-		map.put("resutl", ex.getLocalizedMessage());
-		map.put("status", HttpStatus.BAD_REQUEST);
-		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.BAD_REQUEST);
+	@ExceptionHandler(UnAuthorizedException.class)
+	public ResponseEntity<Map<String , Object>> Exception(UnAuthorizedException ex,WebRequest request) {
+  	 	CustomException cu=new CustomException(HttpStatus.UNAUTHORIZED, LocalDateTime.now(), ex.getMessage(), request.getDescription(false), HttpStatus.UNAUTHORIZED.value());
+    	Map<String, Object> map1=new HashMap<>();
+		map1.put(ConstantValues.statusCode, cu.getStatusCode());
+		map1.put(ConstantValues.Status, cu.getStatus());
+		map1.put(ConstantValues.StatusMessage, cu.getMessage());
+		map1.put(ConstantValues.Timestamp, cu.getTimestamp());
+		map1.put(ConstantValues.Description, cu.getDescription());
+		return new ResponseEntity<Map<String, Object>>(map1,HttpStatus.UNAUTHORIZED);
+    		
 	}
 }

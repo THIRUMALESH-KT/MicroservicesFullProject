@@ -29,6 +29,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.employe.entity.EmployeeMicroservices;
 import com.employe.entity.UserPrinciples;
+import com.employe.helper.CustomAnnotation;
+import com.employe.helper.rolemapping;
 import com.employe.service.EmployeService;
 import com.employe.userRequest.employeeUserRequest;
 
@@ -54,6 +56,7 @@ public class EmployeController {
 		return "This is welcome page";
 	}
 	@PostMapping("/insert")
+	@CustomAnnotation(allowedRoles = {"1007"})
 	public ResponseEntity<Map<String, Object>> Insert(@RequestBody employeeUserRequest employe) throws Exception{
 		log.info("*********inside insert employeeController");
 		Map<String, Object> map=new HashMap<>();
@@ -65,6 +68,7 @@ public class EmployeController {
 	
 
 	@GetMapping("/getAllEmployesUnderMe")
+	@CustomAnnotation(allowedRoles = {"1005"})
 	public ResponseEntity<Map<String, Object>> getAllEmployesUnderMe(HttpServletRequest request) throws Exception{
 		log.info("inside getAllEmployesUnderMe EmployeController");
 //        String authServiceUrl = "http://localhost:8087/auth/authenticate"; 
@@ -78,6 +82,7 @@ public class EmployeController {
 		return new ResponseEntity<>(map,HttpStatus.OK);
 	}
 	@GetMapping("/getAllEmployees")
+	@CustomAnnotation(allowedRoles = {"1007"})
 	public ResponseEntity<Map<String, Object>> GetAllEmployes(HttpServletRequest request) throws Exception{
 		log.info("inside getAllEmployes EmployeController");
         Map<String, Object> map=new LinkedHashMap<>();
@@ -97,7 +102,8 @@ public class EmployeController {
 	//Get By Employe ID
 	//@Role(value = 1001)
 	//GetEmployee Details using id
-	@GetMapping("/getById/{id}")
+	@GetMapping("/getOthers/{id}")
+	@CustomAnnotation(allowedRoles = {"1005","1006","1007"} )
 	public EmployeeMicroservices getById(@PathVariable(required = false) Long id) throws Exception{
 		
 		log.info("********inside getById employeeController");
@@ -106,7 +112,8 @@ public class EmployeController {
 	
 	
 	//GetEmployeeDetails using Token
-	@GetMapping("/getById")
+	@GetMapping("/getSelf")
+	@CustomAnnotation(allowedRoles = {"1001","1002","1003","1004","1005","1006","1007"})
 	public EmployeeMicroservices getById(HttpServletRequest request) {
 		log.info("*********inside getById Using Tokin employeeController");
 		return employeeService.GetById(request);
@@ -114,6 +121,8 @@ public class EmployeController {
 	//Update By Id
 	
 	@PutMapping("/update/Personal/Details/{id}")
+	@CustomAnnotation(allowedRoles = {"1001","1002","1003","1004","1005","1006","1007"})
+
 	public  Object updateById(@PathVariable(required = false) Long id,@RequestBody(required = false) employeeUserRequest employee) throws Exception{
 		 Map<String, Object> map=new LinkedHashMap<>();
 		 log.info("**********inside updateById employeController");
@@ -126,6 +135,8 @@ public class EmployeController {
 	
 	//Delete By Id
 	@DeleteMapping("/deleteById/{id}")
+	@CustomAnnotation(allowedRoles = {"1004","1006","1007"} )
+
 	public  Object DeleteById(@PathVariable(required = false) Long id) throws Exception{
 		 log.info("**********inside DeleteById employeController");
 
@@ -144,6 +155,8 @@ public class EmployeController {
 	
 	//  Password Reset
 	@PostMapping("/password/reset/request")
+	@CustomAnnotation(allowedRoles = {"1001","1002","1003","1004","1005","1006","1007"})
+
 	public ResponseEntity<Object> initiatePasswordReset(@RequestParam Long userId) throws UserPrincipalNotFoundException, MessagingException {
 		log.info("**********inside initiatePasswordReset EmployeeController");
 		EmployeeMicroservices employee=employeeService.initiatePasswordReset( userId);
@@ -156,6 +169,8 @@ public class EmployeController {
 	
 	// 1. User submits the received OTP and a new password (controller)
 	@PostMapping("/password/reset/confirm")
+	@CustomAnnotation(allowedRoles = {"1001","1002","1003","1004","1005","1006","1007"})
+
 	public ResponseEntity<Object> confirmPasswordReset(
 		
 	        @RequestParam Long userId, 

@@ -1,5 +1,6 @@
 package com.auth.service;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.client.RestTemplate;
 
+import com.auth.config.UserPrinciples;
 import com.auth.userRequest.LoginRequest;
 import com.auth.userRequest.employeeUserRequest;
 
@@ -42,11 +44,12 @@ public class AuthService {
 	}
 	public String Login(LoginRequest request) throws Exception {
 		log.info("********inside Login AuthService");
-		ResponseEntity<employeeUserRequest> employee=restTemplate.exchange(employeeBasePath+"/getById/"+request.getId(), HttpMethod.GET, new HttpEntity<LoginRequest>(request), employeeUserRequest.class);
+		ResponseEntity<UserPrinciples> employee=restTemplate.exchange(employeeBasePath+"/getUser/"+request.getId(), HttpMethod.GET, new HttpEntity<LoginRequest>(request), UserPrinciples.class);
+		UserPrinciples employee1=employee.getBody();
 		if(employee==null) {
 			throw new Exception("Invalid User Details");
 		}
-		return jwtService.generteToken(String.valueOf(request.getId()));
+		return jwtService.generteToken(employee1);
 	}
 
 }

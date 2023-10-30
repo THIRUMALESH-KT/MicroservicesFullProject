@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.leaveType.helper.CustomAnnotation;
 import com.leaveType.service.LeaveTypeService;
 import com.leaveType.userRequest.LeaveTypeUserRequest;
 
@@ -27,6 +28,7 @@ public class LeaveTypeController {
 	@Autowired
 	private LeaveTypeService leaveTypeService;
 	@PostMapping("/addLeaveType")
+	@CustomAnnotation(allowedRoles = {"1004","1005","1006","1007"})
 	public ResponseEntity<Map<String, Object>> CreateLeaveType(@RequestBody LeaveTypeUserRequest leaveTypeUserRequest,HttpServletRequest httprequest) throws Exception{
 		log.info("inside CreateLeaveType LeaveTypeController");
 		Map<String, Object> map	=new HashMap<>();

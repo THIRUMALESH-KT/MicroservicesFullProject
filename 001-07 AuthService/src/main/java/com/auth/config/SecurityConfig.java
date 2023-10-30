@@ -1,6 +1,7 @@
 package com.auth.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -10,8 +11,10 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import com.auth.exception.CustomAccessDeniedException;
 import com.auth.exception.GlobalExceptionHandular;
@@ -24,13 +27,21 @@ import lombok.extern.slf4j.Slf4j;
 @EnableAsync
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
-
 	@Autowired
-	private JwtAuthenticationFilter filter;
+	@Qualifier("handlerExceptionResolver")
+	private HandlerExceptionResolver exceptionResolver;
+	
+	@Bean
+	public JwtAuthenticationFilter authenticationFilter() {
+		return new JwtAuthenticationFilter(exceptionResolver);
+	}
+	
 	@Autowired
 	private AuthEntryPoint authEntryPoint;
 	@Autowired
 	private AuthenticationProvider authProvider;
+	@Autowired
+	private accessdeniedhandlerimp accessDeniedException;
 	@Bean
 	public SecurityFilterChain chain(HttpSecurity http) throws Exception {
 		return http
@@ -51,20 +62,15 @@ public class SecurityConfig {
 				
 				.anyRequest().authenticated()
 				)
-				
-				.exceptionHandling(exception->
-				exception
-				.accessDeniedHandler((request, response, accessDeniedException) -> {
-			        log.error("Access Denied: " + accessDeniedException.getMessage());
-		            throw new CustomAccessDeniedException("Access Denied: " + accessDeniedException.getMessage());
-
-			    })
-				
-				.authenticationEntryPoint(authEntryPoint)
-				)
+				.sessionManagement(session->
+				session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//				.exceptionHandling(ex->ex.accessDeniedHandler(accessDeniedException)).
+//                sessionManagement(ses->ses.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//				
+//				
 				.authenticationProvider(authProvider)
 
-				.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
+				.addFilterBefore(authenticationFilter(), UsernamePasswordAuthenticationFilter.class)
 				.build();
 	}
 	@Bean

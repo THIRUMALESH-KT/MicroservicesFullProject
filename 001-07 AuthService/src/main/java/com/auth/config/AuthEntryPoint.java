@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -31,19 +32,16 @@ public class AuthEntryPoint implements AuthenticationEntryPoint {
 	public void commence(HttpServletRequest request, HttpServletResponse response,
 			AuthenticationException authException) throws IOException, ServletException {
 		 log.info("*******inside commence AuthEntryPoint");
-		    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-		    response.setContentType("application/json");
-		    log.info("****** exception instance: " + authException.getClass());
-		    Map<String, Object> map = new HashMap<>();
-		    map.put("result", "failed");
-		    map.put("message", authException.getLocalizedMessage()); // Changed from "result" to "message"
-		    map.put("status", HttpStatus.BAD_REQUEST);
-		    map.put("status code", HttpStatus.BAD_REQUEST.value());
+		    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			final Map<String, Object> body = new HashMap<>();
+			body.put("status", HttpServletResponse.SC_UNAUTHORIZED);
+			body.put("statuscode", HttpStatus.UNAUTHORIZED);
+			body.put("message", authException.getMessage());
+			body.put("path", request.getServletPath());
 
-		    ObjectMapper objectMapper = new ObjectMapper();
-		    String jsonResponse = objectMapper.writeValueAsString(map);
-
-		    response.getWriter().write(jsonResponse);
+			final ObjectMapper mapper = new ObjectMapper();
+			mapper.writeValue(response.getOutputStream(), body);
 	}
 
 }
