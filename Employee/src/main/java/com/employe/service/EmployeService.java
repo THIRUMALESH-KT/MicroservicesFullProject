@@ -1,11 +1,14 @@
 package com.employe.service;
 
 import java.net.URI;
+import java.net.http.HttpRequest;
 import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -15,19 +18,23 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.WebRequest;
 
 import com.employe.dto.UserDetails;
 import com.employe.entity.EmployeeMicroservices;
 import com.employe.entity.OTPRecord;
 import com.employe.entity.UserPrinciples;
+import com.employe.exception.CustomException;
 import com.employe.exception.DublicateEmployeeException;
 import com.employe.exception.EmployeeNotFoundException;
+import com.employe.helper.ConstantValues;
 import com.employe.repository.EmployeeRepository;
 import com.employe.repository.OTPRecordRepository;
 import com.employe.repository.UserPrinciplesRepository;
@@ -93,35 +100,54 @@ public class EmployeService {
 	public EmployeeMicroservices UpdateById(Long id, employeeUserRequest request) throws Exception {
 		log.info("******inside UpdateById employeeService ");
 		EmployeeMicroservices employee=employeeRepository.findByEmployeeId(id);
-		if(employee==null)throw new Exception("Id Not Found");
+		if(employee==null)throw new EmployeeNotFoundException("Employee Id Not Found");
 		employee.setName(request.getName());
 		employee.setMobile(request.getMobile());
 		employee.setDesignation(request.getDesignation());
 		employee.setEmail(request.getEmail());
 		employee.setSkill(request.getSkill());
 		log.info("**********before calling manager service for removeEmployeeId ");
-		restTemplate.exchange(managerBaseUrl+"/removeEmployeeId/"+employee.getManagerId()+"/"+employee.getEmployeeId(), HttpMethod.PUT, null, Void.class);
+		ResponseEntity<Object> object= restTemplate.exchange(managerBaseUrl+"/removeEmployeeId/"+employee.getManagerId()+"/"+employee.getEmployeeId(), HttpMethod.PUT, null, Object.class);
+		if(object.getStatusCode()==HttpStatus.BAD_REQUEST)throw new EmployeeNotFoundException(object.getBody().toString());
 		employee.setManagerId(request.getManagerId());
 		log.info("********** manager Id "+request.getManagerId());
 		ResponseEntity<Object> ob = restTemplate.exchange(managerBaseUrl + "/getById/" + request.getManagerId(),
 				HttpMethod.GET, null, Object.class);
-		
+		if(ob.getStatusCode()==HttpStatus.BAD_REQUEST)throw new EmployeeNotFoundException(ob.getBody().toString());
 		log.info("*********after calling manager getById endPoint");
 		ResponseEntity<Object> manager=restTemplate.exchange(managerBaseUrl+"/update/"+id, HttpMethod.PUT, new HttpEntity<employeeUserRequest>(request), Object.class);
+		if(manager.getStatusCode()==HttpStatus.BAD_REQUEST)throw new EmployeeNotFoundException(manager.getBody().toString());
+
 		log.info("*********after updating manager Service ");
-		restTemplate.exchange(managerBaseUrl+"/addEmployeeId/"+employee.getManagerId()+"/"+employee.getEmployeeId(), HttpMethod.PUT, null, Void.class);
+		ResponseEntity<Object>obj= restTemplate.exchange(managerBaseUrl+"/addEmployeeId/"+employee.getManagerId()+"/"+employee.getEmployeeId(), HttpMethod.PUT, null, Object.class);
+		if(obj.getStatusCode()==HttpStatus.BAD_REQUEST)throw new EmployeeNotFoundException(obj.getBody().toString());
+
 		return employeeRepository.save(employee);
 	}
 
-	public EmployeeMicroservices GetById(Long id) throws Exception {
+	public ResponseEntity<Object> GetById(Long id) throws Exception {
+		log.info("********inside getById employee Service");
 		EmployeeMicroservices employee=employeeRepository.getByEmployeeId(id);
-		if(employee==null)throw new Exception("Employee id not Found");
-		return  employee;
+		log.info("******employee: "+employee);
+		if(employee==null) {
+			log.info("*****inside if");
+		
+	  	 	CustomException cu=new CustomException(HttpStatus.BAD_REQUEST, LocalDateTime.now(), "Employee Id Not Found", null, HttpStatus.BAD_REQUEST.value());
+	    	Map<String, Object> map1=new LinkedHashMap<>();
+	    	map1.put(ConstantValues.StatusMessage, cu.getMessage());
+//	    	map1.put(ConstantValues.Description, cu.getDescription());
+	    	map1.put(ConstantValues.Timestamp, cu.getTimestamp());
+			map1.put(ConstantValues.statusCode, cu.getStatusCode());
+			map1.put(ConstantValues.Status, cu.getStatus());			
+			return ResponseEntity.badRequest().body(map1);
+		}
+		log.info("******out side if");
+		return  ResponseEntity.ok(employee);
 	}
 
 	public EmployeeMicroservices Insert(employeeUserRequest employe) throws Exception {
 		log.info("************inside Insert EmployeeService");
-		if(employeeRepository.findByEmployeeId(employe.getEmployeeId())!=null) throw new DublicateEmployeeException(" Ducblicate Employee ");
+		if(employeeRepository.findByEmployeeId(employe.getEmployeeId())!=null) throw new DublicateEmployeeException(" Ducblicate Employee Id");
 			
 		
 		EmployeeMicroservices employeeMicroservices = new EmployeeMicroservices(null, employe.getEmployeeId(),
@@ -135,20 +161,23 @@ public class EmployeService {
 			log.info("********** manager Id "+employe.getManagerId());
 			ResponseEntity<Object> ob = restTemplate.exchange(managerBaseUrl + "/getById/" + employe.getManagerId(),
 					HttpMethod.GET, null, Object.class);
+			if(ob.getStatusCode()==HttpStatus.BAD_REQUEST)throw new EmployeeNotFoundException(ob.getBody().toString());
 			log.info("*********after calling manager getById endPoint");
 
 		
 			EmployeeMicroservices employee=	employeeRepository.save(employeeMicroservices);
 				userPrinciplesRepository.save(userPrinciples);
 
-				 restTemplate.exchange(managerBaseUrl+"/addEmployeeId/"+employe.getManagerId()+"/"+employe.getEmployeeId(), HttpMethod.PUT,
-				 null, Void.class);
+				ResponseEntity<Object> object= restTemplate.exchange(managerBaseUrl+"/addEmployeeId/"+employe.getManagerId()+"/"+employe.getEmployeeId(), HttpMethod.PUT,
+				 null, Object.class);
+				if(object.getStatusCode()==HttpStatus.BAD_REQUEST)throw new EmployeeNotFoundException(object.getBody().toString());
 				return employee;
 		
 
 		} else if(employe.getDesignation().equalsIgnoreCase("MANAGER")) {
 			employeeMicroservices.setManagerId(employe.getEmployeeId());
-			restTemplate.exchange(managerBaseUrl+"/insert", HttpMethod.POST,new HttpEntity<employeeUserRequest>(employe), Void.class);
+			ResponseEntity<Object> manager= restTemplate.exchange(managerBaseUrl+"/insert", HttpMethod.POST,new HttpEntity<employeeUserRequest>(employe), Object.class);
+			if(manager.getStatusCode()==HttpStatus.BAD_REQUEST)throw new  DublicateEmployeeException(manager.getBody().toString());
 			EmployeeMicroservices employee= employeeRepository.save(employeeMicroservices);
 			userPrinciplesRepository.save(userPrinciples);
 
@@ -167,12 +196,12 @@ public class EmployeService {
 		return employeeRepository.findByManagerId(managerId);
 	}
 
-	public EmployeeMicroservices getHr() throws Exception {
+	public ResponseEntity<?> getHr() throws Exception {
 		log.info("************inside getHr EmployeeServicee");
 		EmployeeMicroservices hr=employeeRepository.findByDesignation("HR");
-		if(hr==null)throw new Exception("Hr not Found");
+		if(hr==null)return ResponseEntity.badRequest().body("HR Id Not Found");
 		log.info("************after fetching hr details");
-		return hr;
+		return ResponseEntity.ok(hr);
 	}
 	
 
@@ -285,17 +314,19 @@ public class EmployeService {
 
 	}
 
-	public Object getUser(Long id) throws Exception {
-		if(employeeRepository.findByEmployeeId(id).getIsDeleted()) throw new Exception("Employee Inactive");
-			
-		
-		
-		return userPrinciplesRepository.findById(id).orElseThrow(()->new Exception("Invalid Login Id"));
+	public ResponseEntity<?> getUser(Long id) throws Exception {
+		log.info("*******inside getUser employeeService");
+		EmployeeMicroservices employee=employeeRepository.findByEmployeeId(id);
+		if(employee==null) {
+			return ResponseEntity.badRequest().body("Employee id Not Found");
+		}if(employee.getIsDeleted()) {
+			return ResponseEntity.badRequest().body("Employee is InActive");
+		}
+		return  ResponseEntity.ok(userPrinciplesRepository.findById(id));
 	}
 
 	public EmployeeMicroservices GetById(HttpServletRequest request) {
 		log.info("*********inside getById employeeService");
-		log.info(request.getHeader(HttpHeaders.AUTHORIZATION));
 		return employeeRepository.findByEmployeeId(Long.valueOf(jwtService.extractEmployeeId(request.getHeader(HttpHeaders.AUTHORIZATION).substring(7))));
 	}
 

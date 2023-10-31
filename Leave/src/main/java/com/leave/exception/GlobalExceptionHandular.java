@@ -3,6 +3,7 @@ package com.leave.exception;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,14 +22,29 @@ import com.netflix.config.validation.ValidationException;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 
 
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandular {
 
+	@ExceptionHandler({MethodArgumentNotValidException.class,})
+	   public Map<String,String> MethodArgumentNotValidException(MethodArgumentNotValidException ex){
+		 log.info("*******inside MethodArgumentNotValidException" );
+	    	Map<String,String> errorsMap=new LinkedHashMap<>();
+	    	errorsMap.put("message", "Validation failed ");
+	        ex.getBindingResult().getFieldErrors().forEach(error->{
+	            errorsMap.put(error.getField(),error.getDefaultMessage());
+	        });
+	        errorsMap.put("status", String.valueOf(HttpStatus.BAD_REQUEST.value()));
+	        return errorsMap;
+	    }
 	@ExceptionHandler(UnAuthorizedException.class)
-	public ResponseEntity<Map<String , Object>> Exception(UnAuthorizedException ex,WebRequest request) {
+	public ResponseEntity<Map<String , Object>> UnAuthorizedException(UnAuthorizedException ex,WebRequest request) {
+		 log.info("*******inside UnAuthorizedException" );
+
   	 	CustomException cu=new CustomException(HttpStatus.UNAUTHORIZED, LocalDateTime.now(), ex.getMessage(), request.getDescription(false), HttpStatus.UNAUTHORIZED.value());
     	Map<String, Object> map1=new HashMap<>();
 		map1.put(ConstantValues.statusCode, cu.getStatusCode());
@@ -39,9 +55,11 @@ public class GlobalExceptionHandular {
 		return new ResponseEntity<Map<String, Object>>(map1,HttpStatus.UNAUTHORIZED);
     		
 	}
-	@ExceptionHandler(RuntimeException.class)
-	public ResponseEntity<Map<String , Object>> Exception(RuntimeException ex,WebRequest request) {
-  	 	CustomException cu=new CustomException(HttpStatus.BAD_REQUEST, LocalDateTime.now(), ex.getLocalizedMessage(), request.getDescription(false), HttpStatus.BAD_REQUEST.value());
+	@ExceptionHandler(EmployeeNotFoundException.class)
+	public ResponseEntity<Map<String , Object>> EmployeeNotFoundException(EmployeeNotFoundException ex,WebRequest request) {
+		 log.info("*******inside EmployeeNotFoundException" );
+
+		CustomException cu=new CustomException(HttpStatus.BAD_REQUEST, LocalDateTime.now(), ex.getLocalizedMessage(), request.getDescription(false), HttpStatus.BAD_REQUEST.value());
     	Map<String, Object> map1=new HashMap<>();
 		map1.put(ConstantValues.statusCode, cu.getStatusCode());
 		map1.put(ConstantValues.Status, cu.getStatus());
@@ -49,26 +67,41 @@ public class GlobalExceptionHandular {
 		map1.put(ConstantValues.Timestamp, cu.getTimestamp());
 		map1.put(ConstantValues.Description, cu.getDescription());
 		return new ResponseEntity<Map<String, Object>>(map1,HttpStatus.BAD_REQUEST);
+	}
+	@ExceptionHandler(LeaveIdNotFoundException.class)
+	public ResponseEntity<Map<String , Object>> LeaveIdNotFoundException(LeaveIdNotFoundException ex,WebRequest request) {
+  	 	
+		 log.info("*******inside LeaveIdNotFoundException" );
+CustomException cu=new CustomException(HttpStatus.BAD_REQUEST, LocalDateTime.now(), ex.getLocalizedMessage(), request.getDescription(false), HttpStatus.BAD_REQUEST.value());
+    	Map<String, Object> map1=new HashMap<>();
+		map1.put(ConstantValues.statusCode, cu.getStatusCode());
+		map1.put(ConstantValues.Status, cu.getStatus());
+		map1.put(ConstantValues.StatusMessage, cu.getMessage());
+		map1.put(ConstantValues.Timestamp, cu.getTimestamp());
+		map1.put(ConstantValues.Description, cu.getDescription());
+		return new ResponseEntity<Map<String, Object>>(map1,HttpStatus.BAD_REQUEST);
+	}
+	@ExceptionHandler(RuntimeException.class)
+	public ResponseEntity<Map<String, Object>> RuntimeException(RuntimeException ex,WebRequest request) {
+		 log.info("*******inside RuntimeException" );
+
+		CustomException cu=new CustomException(HttpStatus.BAD_REQUEST, LocalDateTime.now(), ex.getLocalizedMessage(), request.getDescription(false), HttpStatus.BAD_REQUEST.value());
+    	Map<String, Object> map1=new HashMap<>();
+//		map1.put(ConstantValues.statusCode, cu.getStatusCode());
+//		map1.put(ConstantValues.Status, cu.getStatus());
+		map1.put(ConstantValues.StatusMessage,ex.getLocalizedMessage());
+//		map1.put(ConstantValues.Timestamp, cu.getTimestamp());
+//		map1.put(ConstantValues.Description, cu.getDescription());
+		return new ResponseEntity<Map<String, Object>>(map1,HttpStatus.BAD_REQUEST);
+	//	return ResponseEntity.badRequest().body(ex.getMessage());
     		
 	}
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
-	@ExceptionHandler({MethodArgumentNotValidException.class,})
-	 public Map<String,Object> validateException(MethodArgumentNotValidException ex){
-			
-	  	Map<String,Object> map=new HashMap<>();
-		map.put("result", "failed");
-
-	      ex.getBindingResult().getFieldErrors().forEach(error->{
-	    	  map.put(error.getField(),error.getDefaultMessage());
-	      });
-			map.put("status", String.valueOf(HttpStatus.BAD_REQUEST));
-
-	      return map;
-	  }
+//	
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	 public ResponseEntity<Map<String,Object>> HttpMessageNotReadableException(HttpMessageNotReadableException ex,WebRequest request){
-			
+		 log.info("*******inside HttpMessageNotReadableException" );
+	
 		CustomException cu=new CustomException(HttpStatus.BAD_REQUEST, LocalDateTime.now(), ex.getLocalizedMessage(), request.getDescription(false), HttpStatus.BAD_REQUEST.value());
     	Map<String, Object> map1=new HashMap<>();
 		map1.put(ConstantValues.statusCode, cu.getStatusCode());
@@ -81,7 +114,8 @@ public class GlobalExceptionHandular {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(ValidationException.class)
 	 public ResponseEntity<Map<String,Object>> HttpMessageNotReadableException(ValidationException ex,WebRequest request){
-			
+		 log.info("*******inside HttpMessageNotReadableException" );
+
 		CustomException cu=new CustomException(HttpStatus.BAD_REQUEST, LocalDateTime.now(), ex.getLocalizedMessage(), request.getDescription(false), HttpStatus.BAD_REQUEST.value());
     	Map<String, Object> map1=new HashMap<>();
 		map1.put(ConstantValues.statusCode, cu.getStatusCode());

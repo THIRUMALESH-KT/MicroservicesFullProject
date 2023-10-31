@@ -31,7 +31,7 @@ public class LeaveTypeController {
 	private LeaveTypeService leaveTypeService;
 	@PostMapping("/addLeaveType")
 	@CustomAnnotation(allowedRoles = {"1004","1005","1006","1007"})
-	public ResponseEntity<Map<String, Object>> CreateLeaveType(@Validated @RequestBody LeaveTypeUserRequest leaveTypeUserRequest,HttpServletRequest httprequest) throws Exception{
+	public ResponseEntity<Map<String, Object>> CreateLeaveType(@Valid @RequestBody LeaveTypeUserRequest leaveTypeUserRequest,HttpServletRequest httprequest) throws Exception{
 		log.info("inside CreateLeaveType LeaveTypeController");
 		Map<String, Object> map	=new HashMap<>();
 		map.put("Message : ", "Leave Type Created sucefully");
@@ -53,7 +53,7 @@ public class LeaveTypeController {
 		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
 	}
 	@GetMapping("/getDescription/{id}")
-	public String getDescription(@PathVariable String id) throws Exception {
+	public ResponseEntity<String> getDescription(@PathVariable String id) throws Exception {
 		log.info("*****inside getDescription LeaveTypeController");
 		return leaveTypeService.getDescription(id);
 	}

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.leaveType.entity.LeaveType;
@@ -33,10 +34,10 @@ public class LeaveTypeService {
 		return leaveTypeRepositore.findAll();
 	}
 
-	public String getDescription(String id) throws Exception {
+	public ResponseEntity<String> getDescription(String id) throws Exception {
 		String description=leaveTypeRepositore.findByLeaveCode(id);
-		if(description==null)throw new Exception("invalid leave code");
-		return description;
+		if(description==null)return ResponseEntity.badRequest().body("Invalid Leave Id");
+		return ResponseEntity.ok(description);
 	}
 
 }

@@ -44,7 +44,7 @@ public class ManagerController {
 	//insert Employe into data base
 	
 	@PostMapping("/insert")
-	public Object Insert(@RequestBody(required = false) MangerUserRequest Manager) throws Exception{
+	public ResponseEntity<Object> Insert(@RequestBody(required = false) MangerUserRequest Manager) throws Exception{
 		log.info("inside insert ManagerController");
 		 
 		return managerService.Insert(Manager);
@@ -54,33 +54,33 @@ public class ManagerController {
 	//Get By Employe ID
 	
 	@GetMapping("/getById/{id}")
-	public ResponseEntity<Manager> getById(@PathVariable Long id) throws Exception{
+	public ResponseEntity<Object> getById(@PathVariable Long id) throws Exception{
 	log.info("inside getById ManagerController");
-		return new ResponseEntity<Manager>(managerService.GetById(id),HttpStatus.OK);
+		return managerService.GetById(id);
 	}
 	
 	//Update By Id
 	
 	@PutMapping("/update/{id}")
-	public Object updateById(@PathVariable Long id,@RequestBody(required = false) MangerUserRequest Manager) throws Exception{
+	public ResponseEntity<Object> updateById(@PathVariable Long id,@RequestBody(required = false) MangerUserRequest Manager) throws Exception{
 		log.info("*********inside updateById manager Controller " );
 		return managerService.UpdateById(id,Manager);
 	}
 	
 	//Delete By Id
 	@DeleteMapping("/deleteById/{id}")
-	public Object deleteById(@PathVariable(required = false) Long id) throws Exception{
+	public ResponseEntity<Object> deleteById(@PathVariable(required = false) Long id) throws Exception{
 		return managerService.DeleteById(id);
 	}
 	@PutMapping("/addEmployeeId/{managerId}/{employeeId}")
-	public void AddEMployeeId(@PathVariable("managerId")Long managerId,@PathVariable("employeeId")Long employeeId) throws Exception {
+	public ResponseEntity<Object> AddEMployeeId(@PathVariable("managerId")Long managerId,@PathVariable("employeeId")Long employeeId) throws Exception {
 		log.info("*********inside AddEMployeeId ManagerController");
 
-		managerService.AddEmployeeId(managerId,employeeId);
+		return managerService.AddEmployeeId(managerId,employeeId);
 	}
 	@PutMapping("/removeEmployeeId/{managerId}/{employeeId}")
-	public void RemoveEmployeeId(@PathVariable("managerId")Long managerId,@PathVariable("employeeId")Long employeeId) throws Exception {
+	public ResponseEntity<Object> RemoveEmployeeId(@PathVariable("managerId")Long managerId,@PathVariable("employeeId")Long employeeId) throws Exception {
 		log.info("******inside removeEmployeeId ManagerController ");
-		managerService.RemoveEmployeeId(managerId,employeeId);
+		return managerService.RemoveEmployeeId(managerId,employeeId);
 	}
 }

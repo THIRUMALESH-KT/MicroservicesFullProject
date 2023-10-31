@@ -22,6 +22,8 @@ import org.thymeleaf.context.Context;
 import com.google.common.net.HttpHeaders;
 import com.leave.entity.EmployeeLeave;
 import com.leave.entity.EmployeeLeaveSummary;
+import com.leave.exception.EmployeeNotFoundException;
+import com.leave.exception.LeaveIdNotFoundException;
 import com.leave.repository.LeaveRepository;
 import com.leave.userRequest.UserLeaveRequest;
 import com.leave.userRequest.employeeUserRequest;
@@ -50,7 +52,7 @@ public class LeaveService {
 	private static final String managerBaseUrl = "http://localhost:8084/manager";
 	private static final String leaveTypeBaseUrl = "http://localhost:8086/leaveType";
 
-	public EmployeeLeave ApplyLeave(UserLeaveRequest request, String tokenHeader, Long paramEmployeeId,
+	public ResponseEntity<?> ApplyLeave(UserLeaveRequest request, String tokenHeader, Long paramEmployeeId,
 			MultipartFile file) throws Exception {
 		log.info("*************inside applyLeave LeaveService");
 		 boolean isHalfDayLeave=false;
@@ -92,17 +94,18 @@ public class LeaveService {
 		log.info("********after extract token id: " + tokenId);
 
 		// extracting employee details
-		ResponseEntity<employeeUserRequest> employee = new ResponseEntity<employeeUserRequest>(HttpStatus.OK);
-		ResponseEntity<employeeUserRequest> tokenEmployee = new ResponseEntity<employeeUserRequest>(HttpStatus.OK);
+		ResponseEntity<employeeUserRequest> employee = null;
+		ResponseEntity<employeeUserRequest> tokenEmployee =null;
 		MimeMessage message = javaMailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message, true);
 		Context context = new Context();
 
 		if (paramEmployeeId != null) {
+			log.info("********* paramEmployee id : "+paramEmployeeId);
 			employee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + paramEmployeeId, HttpMethod.GET, null,
 					employeeUserRequest.class);
-			if (employee.getBody() == null)
-				throw new Exception("Employee id not Found");
+			log.info(" after extract employee "+employee.getStatusCode());
+		if(employee.getStatusCode()==HttpStatus.BAD_REQUEST)return ResponseEntity.badRequest().body("Not Fount");
 			leave.setEmployeeId(employee.getBody().getEmployeeId());
 			leave.setAppliedBy(tokenId);
 			leave.setManagerId(employee.getBody().getManagerId());
@@ -110,8 +113,8 @@ public class LeaveService {
 
 			tokenEmployee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + tokenId, HttpMethod.GET, null,
 					employeeUserRequest.class);
-			if (tokenEmployee.getBody() == null)
-				throw new Exception(" Id not found");
+			if(employee.getStatusCode()==HttpStatus.BAD_REQUEST)return ResponseEntity.badRequest().body("Not Found");
+
 
 			helper.setTo(tokenEmployee.getBody().getEmail());
 			managerMail = tokenEmployee.getBody().getEmail();
@@ -123,8 +126,12 @@ public class LeaveService {
 
 			tokenEmployee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + tokenId, HttpMethod.GET, null,
 					employeeUserRequest.class);
+			if(employee.getStatusCode()==HttpStatus.BAD_REQUEST)return ResponseEntity.badRequest().body(tokenEmployee.getBody());
+
 			employee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + tokenEmployee.getBody().getManagerId(),
 					HttpMethod.GET, null, employeeUserRequest.class);
+			if(employee.getStatusCode()==HttpStatus.BAD_REQUEST)return ResponseEntity.badRequest().body(employee.getBody());
+
 			leave.setManagerId(tokenEmployee.getBody().getManagerId());
 			leave.setEmployeeId(tokenEmployee.getBody().getEmployeeId());
 			leave.setAppliedBy(tokenEmployee.getBody().getEmployeeId());
@@ -139,16 +146,17 @@ public class LeaveService {
 		// extracting hr details
 		ResponseEntity<employeeUserRequest> hr = restTemplate.exchange(employeeBaseUrl + "/getHr", HttpMethod.GET,
 				tokenEmployee, employeeUserRequest.class);
-		if (hr.getBody() == null)
-			throw new Exception("Hr Details not Found");
+		if(hr.getStatusCode()==HttpStatus.BAD_REQUEST)throw new  EmployeeNotFoundException(hr.getBody());
 
 		String hrEmail = hr.getBody().getEmail();
 		// Sending Mail
 
 		// Get the Leave Type Description using leave code
 		log.info("********fetch description from leavetype using leavecode :" + request.getLeaveCode());
-		helper.setSubject(restTemplate.exchange(leaveTypeBaseUrl + "/getDescription/" + request.getLeaveCode(),
-				HttpMethod.GET, null, String.class).getBody());
+		ResponseEntity<String> subject=restTemplate.exchange(leaveTypeBaseUrl + "/getDescription/" + request.getLeaveCode(),
+				HttpMethod.GET, null, String.class);
+		if(subject.getStatusCode()==HttpStatus.BAD_REQUEST)throw new LeaveIdNotFoundException(subject.getBody());
+		helper.setSubject(subject.getBody());
 		InternetAddress[] ccRecipients = new InternetAddress[2]; // Assuming two recipients
 		ccRecipients[0] = new InternetAddress(hrEmail);
 		ccRecipients[1] = new InternetAddress(tokenEmployee.getBody().getEmail());
@@ -173,12 +181,13 @@ public class LeaveService {
 		javaMailSender.send(message);
 
 		log.info("******Email Sent Sucefully manager : " + managerMail);
-		return repo.save(leave);
+		return ResponseEntity.ok(repo.save(leave));
 	}
 
 	public Object DeleteLeave(Long id) throws Exception {
 		EmployeeLeave leave = repo.findById(id)
-				.orElseThrow(() -> new Exception("There is no applied leave on given id "));
+				.orElseThrow(() -> new EmployeeNotFoundException("There is no applied leave on given id "));
+		if(leave.getLeaveStatus()!="PENDING") throw new EmployeeNotFoundException("Only Pending Leaves Can Be Deleted");
 		repo.deleteById(id);
 		return "Leave Deleted sucedfully";
 	}
@@ -194,13 +203,14 @@ public class LeaveService {
 	public EmployeeLeave ApproveLeave(Long id) throws Exception {
 		log.info("*********inside approveLeave LeaveService");
 		EmployeeLeave leave = repo.findById(id)
-				.orElseThrow(() -> new Exception("There is no applied leave on given id"));
+				.orElseThrow(() -> new EmployeeNotFoundException("There is no applied leave on given id"));
 		leave.setLeaveStatus("APPROVED");
 		repo.save(leave);
 		log.info("******retrinve employee details ");
 		Long employeeId = leave.getEmployeeId();
-		ResponseEntity<employeeUserRequest> employee = restTemplate.exchange(employeeBaseUrl + "/getById/" + employeeId,
+		ResponseEntity<employeeUserRequest> employee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + employeeId,
 				HttpMethod.GET, null, employeeUserRequest.class);
+		if(employee.getStatusCode()==HttpStatus.BAD_REQUEST)throw new EmployeeNotFoundException(employee.getBody().toString());
 		log.info("**********Sending Approved Email");
 		MimeMessage message = javaMailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -228,6 +238,8 @@ public class LeaveService {
 		Long employeeId = leave.getEmployeeId();
 		ResponseEntity<employeeUserRequest> employee = restTemplate.exchange(employeeBaseUrl + "/getById/" + employeeId,
 				HttpMethod.GET, null, employeeUserRequest.class);
+		if(employee.getStatusCode()==HttpStatus.BAD_REQUEST)throw new EmployeeNotFoundException(employee.getBody().toString());
+
 		log.info("**********Sending Approved Email");
 		MimeMessage message = javaMailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -252,6 +264,8 @@ public class LeaveService {
 	public Object deleteMyLeave(Long id,HttpServletRequest request) throws Exception {
 		log.info("*********inside DeleteMyLeave LeaveService");
 		EmployeeLeave employeeLeave = repo.findById(id).orElseThrow(() -> new Exception("Leave Id Not Found"));
+		if(employeeLeave.getLeaveStatus()!="PENDING") throw new EmployeeNotFoundException("Only Pending Leaves Can Be Deleted");
+
 		log.info("********after fetching employeeLeave ");
 		if(employeeLeave.getEmployeeId()!=Long.valueOf(jwtService.extractEmployeeId(request.getHeader(HttpHeaders.AUTHORIZATION).substring(7))))throw new Exception("Applied leave is not urs");
 		repo.delete(employeeLeave);

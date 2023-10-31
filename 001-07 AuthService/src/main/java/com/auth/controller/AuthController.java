@@ -89,6 +89,7 @@ public class AuthController {
 		return ResponseEntity.ok(map);
 	}
 	else {
+		log.info("*******user not authenticated");
 		throw new RuntimeException("Invalid User Details");
 	}
 	}

@@ -25,16 +25,16 @@ public class ManagerService {
 	@Autowired
 	private ManagerRepository managerRepository;
 	
-	public Object DeleteById(Long id) throws Exception {
+	public ResponseEntity<Object> DeleteById(Long id) throws Exception {
 		Manager employee=managerRepository.findByManagerId(id);
 		if(employee!=null) {
 			
 		managerRepository.delete(employee);
 		}
-		return employee;
+		return ResponseEntity.ok(employee);
 	}
 
-	public Manager UpdateById(Long id, MangerUserRequest request) throws Exception {
+	public ResponseEntity<Object> UpdateById(Long id, MangerUserRequest request) throws Exception {
 		log.info("***********inside updateManagerId ManagaerService");
 		Manager employee=managerRepository.findByManagerId(id);
 		if(employee!=null)
@@ -49,25 +49,24 @@ public class ManagerService {
 			managerRepository.save(employee);
 		}
 		
-		return employee;
+		return ResponseEntity.ok(employee);
 	}
 
-	public Manager GetById(Long id) throws Exception {
+	public ResponseEntity<Object> GetById(Long id) throws Exception {
 		log.info("inside getBYId ManagerService");
 		log.info("Manager id : "+id);
 		Manager manager1=managerRepository.findByManagerId(id);
-		if(manager1==null)throw new Exception("Manger id not found");
-		return manager1;
+		if(manager1==null)return ResponseEntity.badRequest().body("Manager Id Not Found");
+		return ResponseEntity.ok(manager1);
 	}
 
-	public Object Insert(MangerUserRequest employe) throws Exception {
+	public ResponseEntity<Object> Insert(MangerUserRequest employe) throws Exception {
 		Manager manager1=managerRepository.findByManagerId(employe.getEmployeeId());
 		if(manager1!=null) 
-			throw new Exception("(Dublicate Employee) Employee already registred with this employee name : "+employe.getName());
-		
+		return ResponseEntity.badRequest().body("Dublicate Employee  Id");
 		manager1=new Manager(null, employe.getName(), employe.getEmployeeId(),null, employe.getDesignation(), employe.getEmail(),Long.valueOf(employe.getMobile()), employe.getSkill(), employe.getStartDate(), null);
 		
-		return managerRepository.save(manager1);
+		return ResponseEntity.ok(managerRepository.save(manager1));
 	}
 
 	public Object GetAllEmployes() throws Exception {
@@ -75,23 +74,25 @@ public class ManagerService {
 		if(list==null) throw new Exception();
 		return list;
 	}
-	public void AddEmployeeId(Long managerId,Long employeeId) throws Exception   {
+	public ResponseEntity<Object> AddEmployeeId(Long managerId,Long employeeId) throws Exception   {
 		log.info("*****inside addEmployeeId managerService");
 		log.info("*******employee Id: "+employeeId);
 		log.info("******managerId : "+managerId);
-		Manager manager=GetById(managerId);
+		Manager manager=managerRepository.findByManagerId(managerId);
+		if(manager==null)return ResponseEntity.badRequest().body("Manager id Not Found");
 		manager.setEmployeesIds(new ArrayList<>(manager.getEmployeesIds()));
 		manager.getEmployeesIds().add(employeeId);	
 		
-		managerRepository.save(manager);
+		return ResponseEntity.ok(managerRepository.save(manager));
 	}
 
-	public void RemoveEmployeeId(Long managerId, Long employeeId) throws Exception {
+	public ResponseEntity<Object> RemoveEmployeeId(Long managerId, Long employeeId) throws Exception {
 		log.info("****** inside removeEmployeeId ManagerService");
-		Manager manager=GetById(managerId);
+		Manager manager= managerRepository.findByManagerId(managerId);
+		if(manager==null) return ResponseEntity.badRequest().body("Manager Id Not Found");
 		manager.setEmployeesIds(new ArrayList<>(manager.getEmployeesIds()));
 		manager.getEmployeesIds().remove(employeeId);
-		managerRepository.save(manager);
+		return ResponseEntity.ok(managerRepository.save(manager));
 
 	}
 	

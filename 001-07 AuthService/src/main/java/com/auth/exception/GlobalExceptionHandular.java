@@ -32,8 +32,8 @@ public class GlobalExceptionHandular  {
 	
 
     @ExceptionHandler({MethodArgumentNotValidException.class,})
-   public ResponseEntity<Map<String , Object>> validateException(MethodArgumentNotValidException ex){
-	 
+   public ResponseEntity<Map<String , Object>> MethodArgumentNotValidException(MethodArgumentNotValidException ex){
+	 log.info("********** inside MethodArgumentNotValidException");
     	Map<String,Object> errorsMap=new HashMap<>();
     	errorsMap.put("result", "failedd");
         ex.getBindingResult().getFieldErrors().forEach(error->{
@@ -43,21 +43,35 @@ public class GlobalExceptionHandular  {
         return new ResponseEntity<Map<String,Object>>(errorsMap,HttpStatus.BAD_REQUEST);
     }
 	
-	  @ExceptionHandler(value = {ExpiredJwtException.class})
-	    public ResponseEntity<Map<String , Object>> ExpiredJwtException(ExpiredJwtException ex, WebRequest request) {
-	    	CustomException cu=new CustomException(HttpStatus.FORBIDDEN, LocalDateTime.now(), ex.getMessage(), request.getDescription(false), HttpStatus.FORBIDDEN.value());
+    @ExceptionHandler(value = {ExpiredJwtException.class})
+    public ResponseEntity<Map<String, Object>> handleExpiredJwtException(ExpiredJwtException ex, WebRequest request) {
+        log.info("********** inside ExpiredJwtException");
 
-	    	Map<String, Object> map1=new HashMap<>();
-			map1.put(ConstantValues.statusCode, cu.getStatusCode());
-			map1.put(ConstantValues.Status, cu.getStatus());
-			map1.put(ConstantValues.StatusMessage, cu.getMessage());
+        CustomException cu = new CustomException(HttpStatus.FORBIDDEN, LocalDateTime.now(), ex.getMessage(), request.getDescription(false), HttpStatus.FORBIDDEN.value());
 
-			map1.put(ConstantValues.Timestamp, cu.getTimestamp());
-			map1.put(ConstantValues.Description, cu.getDescription());
-			return new ResponseEntity<Map<String, Object>>(map1,HttpStatus.FORBIDDEN);    }
+        Map<String, Object> map1 = new HashMap<>();
+        map1.put(ConstantValues.statusCode, cu.getStatusCode());
+        map1.put(ConstantValues.Status, cu.getStatus());
+        map1.put(ConstantValues.StatusMessage, cu.getMessage());
+        map1.put(ConstantValues.Timestamp, cu.getTimestamp());
+        map1.put(ConstantValues.Description, cu.getDescription());
+
+        // Create a new map with only the desired fields
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put(ConstantValues.statusCode, map1.get(ConstantValues.statusCode));
+        responseMap.put(ConstantValues.Status, map1.get(ConstantValues.Status));
+        responseMap.put(ConstantValues.StatusMessage, map1.get(ConstantValues.StatusMessage));
+        responseMap.put(ConstantValues.Timestamp, map1.get(ConstantValues.Timestamp));
+        responseMap.put(ConstantValues.Description, map1.get(ConstantValues.Description));
+
+        return new ResponseEntity<>(responseMap, HttpStatus.FORBIDDEN);
+    }
+
 
     @ExceptionHandler(value = {JwtException.class})
-    public ResponseEntity<Map<String , Object>> handleJwtException(JwtException ex, WebRequest request) {
+    public ResponseEntity<Map<String , Object>> JwtException(JwtException ex, WebRequest request) {
+   	 log.info("********** inside JwtException");
+
     	CustomException cu=new CustomException(HttpStatus.FORBIDDEN, LocalDateTime.now(), ex.getMessage(), request.getDescription(false), HttpStatus.FORBIDDEN.value());
 
     	Map<String, Object> map1=new HashMap<>();
@@ -71,10 +85,12 @@ public class GlobalExceptionHandular  {
 		}
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String , Object>> AllException(Exception ex){
+    public ResponseEntity<Map<String , Object>> Exception(Exception ex){
+   	 log.info("********** inside Exception");
+
     	Map<String , Object> map=new LinkedHashMap<>();
     	map.put("message ","Failed");
-    	map.put("result ", ex.getMessage());
+    	map.put("result ", ex.getLocalizedMessage());
     	map.put("status" , HttpStatus.BAD_REQUEST);
     	map.put("statusCode", HttpStatus.BAD_REQUEST.value());
     	return new  ResponseEntity<Map<String,Object>>(map,HttpStatus.BAD_REQUEST);

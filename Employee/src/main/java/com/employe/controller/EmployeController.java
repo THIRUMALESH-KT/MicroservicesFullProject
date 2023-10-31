@@ -66,7 +66,7 @@ public class EmployeController {
 	
 
 	@GetMapping("/getAllEmployesUnderMe")
-	@CustomAnnotation(allowedRoles = {"1005"})
+	@CustomAnnotation(allowedRoles = {"1005","1006","1007"})
 	public ResponseEntity<Map<String, Object>> getAllEmployesUnderMe(HttpServletRequest request) throws Exception{
 		log.info("inside getAllEmployesUnderMe EmployeController");
 //        String authServiceUrl = "http://localhost:8087/auth/authenticate"; 
@@ -102,7 +102,7 @@ public class EmployeController {
 	//GetEmployee Details using id
 	@GetMapping("/getOthers/{id}")
 	@CustomAnnotation(allowedRoles = {"1005","1006","1007"} )
-	public EmployeeMicroservices getById(@PathVariable(required = false) Long id) throws Exception{
+	public ResponseEntity<Object> getById(@PathVariable Long id) throws Exception{
 		
 		log.info("********inside getById employeeController");
 		return employeeService.GetById(id);
@@ -121,7 +121,7 @@ public class EmployeController {
 	@PutMapping("/update/Employee/Details/{id}")
 	@CustomAnnotation(allowedRoles = {"1004","1005","1006","1007"})
 
-	public  Object updateById(@PathVariable(required = false) Long id,@Validated @RequestBody(required = false) employeeUserRequest employee) throws Exception{
+	public  Object updateById(@PathVariable(required = false) Long id,@Valid @RequestBody(required = false) employeeUserRequest employee) throws Exception{
 		 Map<String, Object> map=new LinkedHashMap<>();
 		 log.info("**********inside updateById employeController");
 			map.put("Message : ", "Employee Details Updated sucefully ");
@@ -146,9 +146,9 @@ public class EmployeController {
 			return new ResponseEntity<>(map,HttpStatus.OK);	}
 	
 	@GetMapping("/getHr")
-	public EmployeeMicroservices getHr() throws Exception{
+	public ResponseEntity<EmployeeMicroservices> getHr() throws Exception{
 		log.info("***********inside getHr EmployeeController");
-		return employeeService.getHr();
+		return (ResponseEntity<EmployeeMicroservices>) employeeService.getHr();
 	}
 	
 	//  Password Reset
@@ -180,9 +180,9 @@ public class EmployeController {
 	}
 
 	@GetMapping("/getUser/{id}")
-	public ResponseEntity<Object> getUser(@PathVariable Long id) throws Exception{
+	public Object getUser(@PathVariable Long id) throws Exception{
 		log.info("********inside getUser Employee Controller");
-		return ResponseEntity.ok(employeeService.getUser(id));
+		return employeeService.getUser(id);
 	}
 	
 	

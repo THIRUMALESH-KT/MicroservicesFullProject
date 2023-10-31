@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException.BadRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.leave.entity.EmployeeLeave;
@@ -50,46 +51,56 @@ public class LeaveController {
 	
 	@PostMapping("/applyLeave/{employeeId}")
 	@CustomAnnotation(allowedRoles = {"1001","1002","1003","1004","1005","1006","1007"})
-	public ResponseEntity<Map<String,Object>> applyLeave( @Valid @RequestBody(required = false) UserLeaveRequest reqest,HttpServletRequest request ,@PathVariable Long employeeId,@RequestParam(name="file",required = false)MultipartFile file)throws Exception{
+	public ResponseEntity<Object> applyLeave(  @RequestBody @Valid UserLeaveRequest reqest,HttpServletRequest request ,@PathVariable Long employeeId,@RequestParam(name="file",required = false)MultipartFile file)throws Exception{
 		log.info("************inside ApplyLeave LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
-		EmployeeLeave leave= leaveService.ApplyLeave(reqest,request.getHeader("Authorization"),employeeId,file);
-		map.put("for employe : ",leave.getEmployeeId());
-		if(leave.getToDate()!=null) {
-			map.put("from : ", leave.getFromDate()	);
-			map.put("toDate", leave.getToDate());
+		ResponseEntity<EmployeeLeave> leave= (ResponseEntity<EmployeeLeave>) leaveService.ApplyLeave(reqest,request.getHeader("Authorization"),employeeId,file);
+		
+		if(leave.getStatusCode()==HttpStatus.BAD_REQUEST) {
+			return ResponseEntity.badRequest().body(leave.getBody());
+		}
+		map.put("for employe : ",leave.getBody().getEmployeeId());
+		
+		if(leave.getBody().getToDate()!=null) {
+			map.put("from : ", leave.getBody().getFromDate()	);
+			map.put("toDate", leave.getBody().getToDate());
 			
 		}
 		else {
 			map.put("total Days : ", 1);
-			map.put("leave date : ", leave.getFromDate());
+			map.put("leave date : ", leave.getBody().getFromDate());
 		}
 		map.put("Status : ", HttpStatus.OK);
 		map.put("Code : ", HttpStatus.OK.value());
-		return new ResponseEntity<Map<String,Object>>(map,HttpStatus.OK);
+		
+		return ResponseEntity.ok(map);
 	}
 	@PostMapping("/applyLeave")
 	@CustomAnnotation(allowedRoles = {"1001","1002","1003","1004","1005","1006","1007"})
-	public ResponseEntity<Map<String , Object>> applyLeave(@Valid @RequestBody UserLeaveRequest leaveRequest,@RequestParam(name = "file",required = false)MultipartFile file, HttpServletRequest httpRequest,@PathVariable(required = false) Long employeeId)throws Exception{
+	public ResponseEntity<Object> applyLeave(@Valid @RequestBody UserLeaveRequest leaveRequest,@RequestParam(name = "file",required = false)MultipartFile file, HttpServletRequest httpRequest,@PathVariable(required = false) Long employeeId)throws Exception{
 		log.info("**********inside applyLeave2 LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
-	EmployeeLeave leave=	leaveService.ApplyLeave(leaveRequest, httpRequest.getHeader("Authorization"), employeeId, file);
-	map.put("for employe : ",leave.getEmployeeId());
-	if(leave.getToDate()!=null) {
-		map.put("from : ", leave.getFromDate()	);
-		map.put("toDate", leave.getToDate());
+	ResponseEntity<EmployeeLeave> leave=	(ResponseEntity<EmployeeLeave>) leaveService.ApplyLeave(leaveRequest, httpRequest.getHeader("Authorization"), employeeId, file);
+	if(leave.getStatusCode()==HttpStatus.BAD_REQUEST) {
+		return ResponseEntity.badRequest().body(leave.getBody());
+	}
+	map.put("for employe : ",leave.getBody().getEmployeeId());
+	if(leave.getBody().getToDate()!=null) {
+		map.put("from : ", leave.getBody().getFromDate()	);
+		map.put("toDate", leave.getBody().getToDate());
 		
 	}
 	else {
 		map.put("total Days : ", 1);
-		map.put("leave date : ", leave.getFromDate());
+		map.put("leave date : ", leave.getBody().getFromDate());
 	}
 	map.put("Status : ", HttpStatus.OK);
 	map.put("Code : ", HttpStatus.OK.value());
 	
-		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);
-	}
+	
+	return ResponseEntity.ok(map);	}
 	@GetMapping("/allEmployeesLeaveData")
+	@CustomAnnotation(allowedRoles = {"1004","1005","1006","1007"})
 	public ResponseEntity<Map<String, Object>> AllEmployeesLeaveData(HttpServletRequest request) {
 		log.info("***********inside AllEmployeesLeaveData LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
@@ -98,6 +109,7 @@ public class LeaveController {
 		map.put("Code : ", HttpStatus.OK.value());
 		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);	}
 	@DeleteMapping("/delete/{id}")
+	@CustomAnnotation(allowedRoles = {"1004","1005","1006","1007"})
 	public ResponseEntity<Map<String, Object>> DeleteLeave(@PathVariable Long id) throws Exception{
 		log.info("********inside Delete Leave LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
