@@ -57,12 +57,6 @@ public interface LeaveRepository extends JpaRepository<EmployeeLeave, Long> {
 	         String leaveStatus,
 	         LocalDate startDate,
 	         LocalDate endDate);
-
-	
-
-
-
-
 	List<Object> findByEmployeeId(Long valueOf);
 
 	List<Object> findByManagerIdAndLeaveStatus(Long managerId, String string);
@@ -87,6 +81,19 @@ public interface LeaveRepository extends JpaRepository<EmployeeLeave, Long> {
 	        "AND to_date >= :startDate " +
 	        "AND from_date <= :endDate", nativeQuery = true)
 	List<EmployeeLeave> findCurrentLeaves(Long employeeId, String leaveStatus, LocalDate startDate, LocalDate endDate);
+	
+	@Query(value = "SELECT * " +
+	        "FROM employee_leave " +
+	        "WHERE leave_status = :leaveStatus " +
+	        "AND to_date >= :startDate " +
+	        "AND from_date <= :endDate", nativeQuery = true)
+	List<EmployeeLeave> findEmployeesLeaveData(String leaveStatus, LocalDate startDate,LocalDate endDate);
+	
+	@Query(value = "SELECT * " +
+	        "FROM employee_leave " +
+	        "WHERE to_date >= :startDate " +
+	        "AND from_date <= :endDate", nativeQuery = true)
+	List<EmployeeLeave> findAllEmployeesLeaveDataBasedOnLeaveStatusAndDate(LocalDate startDate, LocalDate endDate);
 
 
 }

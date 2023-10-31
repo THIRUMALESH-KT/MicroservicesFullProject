@@ -84,7 +84,7 @@ public class EmployeService {
 	public Object DeleteById(Long id) throws Exception {
 		log.info("********inside DeleteById EmployeeService");
 		EmployeeMicroservices employee=employeeRepository.findByEmployeeId(id);
-		if(employee==null)throw new Exception("Id not Found ");
+		if(employee==null)throw new EmployeeNotFoundException("Employee Id Not Found ");
 		employee.setStatus("INACTIVE");
 		employee.setEndDate(LocalDate.now());
 		employee.setIsDeleted(true);
@@ -108,15 +108,15 @@ public class EmployeService {
 		employee.setSkill(request.getSkill());
 		log.info("**********before calling manager service for removeEmployeeId ");
 		ResponseEntity<Object> object= restTemplate.exchange(managerBaseUrl+"/removeEmployeeId/"+employee.getManagerId()+"/"+employee.getEmployeeId(), HttpMethod.PUT, null, Object.class);
-		if(object.getStatusCode()==HttpStatus.BAD_REQUEST)throw new EmployeeNotFoundException(object.getBody().toString());
+//		if(object.getStatusCode()==HttpStatus.BAD_REQUEST)throw new EmployeeNotFoundException(object.getBody().toString());
 		employee.setManagerId(request.getManagerId());
 		log.info("********** manager Id "+request.getManagerId());
 		ResponseEntity<Object> ob = restTemplate.exchange(managerBaseUrl + "/getById/" + request.getManagerId(),
 				HttpMethod.GET, null, Object.class);
-		if(ob.getStatusCode()==HttpStatus.BAD_REQUEST)throw new EmployeeNotFoundException(ob.getBody().toString());
+//		if(ob.getStatusCode()==HttpStatus.BAD_REQUEST)throw new EmployeeNotFoundException(ob.getBody().toString());
 		log.info("*********after calling manager getById endPoint");
 		ResponseEntity<Object> manager=restTemplate.exchange(managerBaseUrl+"/update/"+id, HttpMethod.PUT, new HttpEntity<employeeUserRequest>(request), Object.class);
-		if(manager.getStatusCode()==HttpStatus.BAD_REQUEST)throw new EmployeeNotFoundException(manager.getBody().toString());
+//		if(manager.getStatusCode()==HttpStatus.BAD_REQUEST)throw new EmployeeNotFoundException(manager.getBody().toString());
 
 		log.info("*********after updating manager Service ");
 		ResponseEntity<Object>obj= restTemplate.exchange(managerBaseUrl+"/addEmployeeId/"+employee.getManagerId()+"/"+employee.getEmployeeId(), HttpMethod.PUT, null, Object.class);
@@ -131,15 +131,15 @@ public class EmployeService {
 		log.info("******employee: "+employee);
 		if(employee==null) {
 			log.info("*****inside if");
-		
-	  	 	CustomException cu=new CustomException(HttpStatus.BAD_REQUEST, LocalDateTime.now(), "Employee Id Not Found", null, HttpStatus.BAD_REQUEST.value());
-	    	Map<String, Object> map1=new LinkedHashMap<>();
-	    	map1.put(ConstantValues.StatusMessage, cu.getMessage());
-//	    	map1.put(ConstantValues.Description, cu.getDescription());
-	    	map1.put(ConstantValues.Timestamp, cu.getTimestamp());
-			map1.put(ConstantValues.statusCode, cu.getStatusCode());
-			map1.put(ConstantValues.Status, cu.getStatus());			
-			return ResponseEntity.badRequest().body(map1);
+		throw new EmployeeNotFoundException("Employee Id Not Found");
+//	  	 	CustomException cu=new CustomException(HttpStatus.BAD_REQUEST, LocalDateTime.now(), "Employee Id Not Found", null, HttpStatus.BAD_REQUEST.value());
+//	    	Map<String, Object> map1=new LinkedHashMap<>();
+//	    	map1.put(ConstantValues.StatusMessage, cu.getMessage());
+////	    	map1.put(ConstantValues.Description, cu.getDescription());
+//	    	map1.put(ConstantValues.Timestamp, cu.getTimestamp());
+//			map1.put(ConstantValues.statusCode, cu.getStatusCode());
+//			map1.put(ConstantValues.Status, cu.getStatus());			
+//			return ResponseEntity.badRequest().body(map1);
 		}
 		log.info("******out side if");
 		return  ResponseEntity.ok(employee);
@@ -199,7 +199,7 @@ public class EmployeService {
 	public ResponseEntity<?> getHr() throws Exception {
 		log.info("************inside getHr EmployeeServicee");
 		EmployeeMicroservices hr=employeeRepository.findByDesignation("HR");
-		if(hr==null)return ResponseEntity.badRequest().body("HR Id Not Found");
+		if(hr==null)throw new EmployeeNotFoundException ("HR Id Not Found");
 		log.info("************after fetching hr details");
 		return ResponseEntity.ok(hr);
 	}

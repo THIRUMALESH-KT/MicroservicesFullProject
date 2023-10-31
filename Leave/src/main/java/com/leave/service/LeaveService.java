@@ -1,6 +1,8 @@
 package com.leave.service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,7 +106,7 @@ public class LeaveService {
 			log.info("********* paramEmployee id : "+paramEmployeeId);
 			employee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + paramEmployeeId, HttpMethod.GET, null,
 					employeeUserRequest.class);
-			log.info(" after extract employee "+employee.getStatusCode());
+			log.info("employee : "+employee.toString());
 		if(employee.getStatusCode()==HttpStatus.BAD_REQUEST)return ResponseEntity.badRequest().body("Not Fount");
 			leave.setEmployeeId(employee.getBody().getEmployeeId());
 			leave.setAppliedBy(tokenId);
@@ -123,10 +125,11 @@ public class LeaveService {
 
 		}
 		if (paramEmployeeId == null) {
-
+			log.info("**** self employee leave apply");
 			tokenEmployee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + tokenId, HttpMethod.GET, null,
 					employeeUserRequest.class);
-			if(employee.getStatusCode()==HttpStatus.BAD_REQUEST)return ResponseEntity.badRequest().body(tokenEmployee.getBody());
+			log.info("********tokenEmployee "+tokenEmployee.toString());
+			if(tokenEmployee.getStatusCode()==HttpStatus.BAD_REQUEST)return ResponseEntity.badRequest().body(tokenEmployee.getBody());
 
 			employee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + tokenEmployee.getBody().getManagerId(),
 					HttpMethod.GET, null, employeeUserRequest.class);
@@ -146,7 +149,6 @@ public class LeaveService {
 		// extracting hr details
 		ResponseEntity<employeeUserRequest> hr = restTemplate.exchange(employeeBaseUrl + "/getHr", HttpMethod.GET,
 				tokenEmployee, employeeUserRequest.class);
-		if(hr.getStatusCode()==HttpStatus.BAD_REQUEST)throw new  EmployeeNotFoundException(hr.getBody());
 
 		String hrEmail = hr.getBody().getEmail();
 		// Sending Mail
@@ -185,8 +187,11 @@ public class LeaveService {
 	}
 
 	public Object DeleteLeave(Long id) throws Exception {
-		EmployeeLeave leave = repo.findById(id)
-				.orElseThrow(() -> new EmployeeNotFoundException("There is no applied leave on given id "));
+		log.info("*********inside deleteleave delete service");
+		EmployeeLeave leave = repo.findById(id).orElseThrow(()-> new EmployeeNotFoundException("Leave id not Found"));
+			log.info("********* leave : "+leave);
+		if(leave==null)
+				throw new EmployeeNotFoundException("There is no applied leave on given id ");
 		if(leave.getLeaveStatus()!="PENDING") throw new EmployeeNotFoundException("Only Pending Leaves Can Be Deleted");
 		repo.deleteById(id);
 		return "Leave Deleted sucedfully";
@@ -200,6 +205,7 @@ public class LeaveService {
 		return repo.findByManagerIdAndLeaveStatus(managerId, "PENDING");
 	}
 
+	
 	public EmployeeLeave ApproveLeave(Long id) throws Exception {
 		log.info("*********inside approveLeave LeaveService");
 		EmployeeLeave leave = repo.findById(id)
@@ -215,13 +221,13 @@ public class LeaveService {
 		MimeMessage message = javaMailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message, true);
 		helper.setTo(employee.getBody().getEmail());
-		helper.setSubject("Leave Rejected ");
+		helper.setSubject("Leave APPROVED ");
 
 		log.debug("**********set variable to context");
 		Context context = new Context();
 		context.setVariable("employee", employee.getBody().getName());
-		context.setVariable("description", "your leave is Rejected . Please continue you Duty.");
-		context.setVariable("status", "Leave Rejected");
+		context.setVariable("description", "your leave is approved . Please continue you Duty.");
+		context.setVariable("status", "Leave aprroved");
 		helper.setText(templateEngine.process("leaveApproved-template.html", context), true);
 		javaMailSender.send(message);
 		return leave;
@@ -248,8 +254,8 @@ public class LeaveService {
 		log.debug("**********set variable to context");
 		Context context = new Context();
 		context.setVariable("employee", employee.getBody().getName());
-		context.setVariable("Description", "your leave is approved. Take care and come back after your leave.");
-		context.setVariable("status", "Leave Approved");
+		context.setVariable("Description", "your leave is REJECTED. Take care and come back after your leave.");
+		context.setVariable("status", "Leave REJECTED");
 		helper.setText(templateEngine.process("leaveApproved-template.html", context), false);
 		javaMailSender.send(message);
 		return leave;
@@ -272,24 +278,93 @@ public class LeaveService {
 		return employeeLeave;
 	}
 
-	public Float takenLeaves(Long employeeId,String status,LocalDate requeriedMonth) {
+	public Float takenLeaves(Long employeeId,String status,String monthDate) {
 		log.info("*********inside takenLeaves leaveService");
-		LocalDate startDate = requeriedMonth.minusMonths(1).withDayOfMonth(26);
-		LocalDate endDate = requeriedMonth.withDayOfMonth(25);
+		 LocalDate requiredMonth;
+
+		    try {
+		        // Define a custom date format pattern "yyyy-MM-dd"
+		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+		        // Append "01" to the input date to make it "yyyy-MM-01"
+		        String fullDate = monthDate + "-01";
+
+		        // Parse the complete date
+		        requiredMonth = LocalDate.parse(fullDate, formatter);
+		    } catch (DateTimeParseException e) {
+		        log.error("Invalid date format: " + monthDate);
+		        throw new IllegalArgumentException("Invalid date format. Please use yyyy-MM format.");
+		    }
+
+		    log.info("required Month : " + requiredMonth);
+
+//	
+		LocalDate startDate = requiredMonth.minusMonths(1).withDayOfMonth(26);
+		LocalDate endDate = requiredMonth.withDayOfMonth(25);
 		Float ob = repo.findApprovedLeaveDaysInCurrentMonth(employeeId,status, startDate, endDate);
 		log.info("*******" + ob);
 		return ob;
 	}
 
-	public List<EmployeeLeave> monthlyLeave(Long employeeId, String leaveStatus, LocalDate requiredMonth) {
+	public List<EmployeeLeave> monthlyLeave(Long employeeId, String leaveStatus, String monthDate) {
 	    log.info("*********inside monthlyLeave leaveService");
+	    LocalDate requiredMonth;
+
+	    try {
+	        // Define a custom date format pattern "yyyy-MM-dd"
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+	        // Append "01" to the input date to make it "yyyy-MM-01"
+	        String fullDate = monthDate + "-01";
+
+	        // Parse the complete date
+	        requiredMonth = LocalDate.parse(fullDate, formatter);
+	    } catch (DateTimeParseException e) {
+	        log.error("Invalid date format: " + monthDate);
+	        throw new IllegalArgumentException("Invalid date format. Please use yyyy-MM format.");
+	    }
+
+	    log.info("required Month : " + requiredMonth);
 
 	    LocalDate startDate = requiredMonth.minusMonths(1).withDayOfMonth(26);
 	    LocalDate endDate = requiredMonth.withDayOfMonth(25);
 
 	    List<EmployeeLeave> leaveRecords = repo.findCurrentLeaves(employeeId, leaveStatus, startDate, endDate);
+	    return modifiedResults(leaveRecords, startDate, endDate);
+	}
+	public List<EmployeeLeave> HrLevelMonthyLeave(String leaveStatus, String monthDate) {
+	    log.info("*********inside monthlyLeave leaveService");
+	    LocalDate requiredMonth;
 
+	    try {
+	        // Define a custom date format pattern "yyyy-MM-dd"
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+	        // Append "01" to the input date to make it "yyyy-MM-01"
+	        String fullDate = monthDate + "-01";
+
+	        // Parse the complete date
+	        requiredMonth = LocalDate.parse(fullDate, formatter);
+	    } catch (DateTimeParseException e) {
+	        log.error("Invalid date format: " + monthDate);
+	        throw new IllegalArgumentException("Invalid date format. Please use yyyy-MM format.");
+	    }
+
+	    log.info("required Month : " + requiredMonth);
+
+	    LocalDate startDate = requiredMonth.minusMonths(1).withDayOfMonth(26);
+	    LocalDate endDate = requiredMonth.withDayOfMonth(25);
+	    if(leaveStatus.equalsIgnoreCase("ALL")) {
+	        List<EmployeeLeave> leaveRecords = repo.findAllEmployeesLeaveDataBasedOnLeaveStatusAndDate(startDate, endDate);
+		    return modifiedResults(leaveRecords, startDate, endDate);
+	    }
+	    List<EmployeeLeave> leaveRecords = repo.findEmployeesLeaveData( leaveStatus, startDate, endDate);
+	    return modifiedResults(leaveRecords, startDate, endDate);
+	}
+	
+	
 	    // Modify the results to match your requirement
+	    public List<EmployeeLeave> modifiedResults(List<EmployeeLeave> leaveRecords,LocalDate startDate, LocalDate endDate){
 	    List<EmployeeLeave> modifiedResults = new ArrayList<>();
 
 	    for (EmployeeLeave leave : leaveRecords) {

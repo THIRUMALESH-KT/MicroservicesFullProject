@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.manager.entity.Manager;
+import com.manager.exception.EmployeeNotFoundException;
 import com.manager.exception.UserNotFountException;
 import com.manager.repository.ManagerRepository;
 import com.manager.userRequest.MangerUserRequest;
@@ -56,7 +57,8 @@ public class ManagerService {
 		log.info("inside getBYId ManagerService");
 		log.info("Manager id : "+id);
 		Manager manager1=managerRepository.findByManagerId(id);
-		if(manager1==null)return ResponseEntity.badRequest().body("Manager Id Not Found");
+//		if(manager1==null)return ResponseEntity.badRequest().body("Manager Id Not Found");
+		if(manager1==null)throw new EmployeeNotFoundException("Manager Id Not Found");
 		return ResponseEntity.ok(manager1);
 	}
 

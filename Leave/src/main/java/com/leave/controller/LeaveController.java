@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.protocol.HTTP;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -178,7 +179,7 @@ public class LeaveController {
 	}
 	
 	@DeleteMapping("/deleteMyLeave/{id}")
-	@CustomAnnotation(allowedRoles = {"1005","1006","1007"})
+	@CustomAnnotation(allowedRoles = {"1001","1002","1003","1004","1005","1006","1007"})
 
 	public ResponseEntity<Map<String, Object>> deleteMyLeave(@PathVariable Long id,HttpServletRequest request) throws Exception{
 		log.info("**********inside deleteMyLeave LeaveController");
@@ -188,11 +189,12 @@ public class LeaveController {
 		map.put("Status : ", HttpStatus.OK);
 		map.put("Code : ", HttpStatus.OK.value());
 		return new ResponseEntity<Map<String,Object>>(map, HttpStatus.OK);
+		
 	}
 	@GetMapping("/takenLeaves/{employeeId}/{leaveStatus}/{requeriedMonth}")
 	@CustomAnnotation(allowedRoles = {"1005","1006","1007"})
 
-	public ResponseEntity<Map<String , Object>> takenLeaves(@PathVariable Long employeeId,@PathVariable String leaveStatus,@PathVariable LocalDate requeriedMonth) {
+	public ResponseEntity<Map<String , Object>> takenLeaves(@PathVariable Long employeeId,@PathVariable String leaveStatus,@PathVariable String requeriedMonth) {
 		log.info("********inside takenLeaves LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
 		map.put("message ","Employee :"+ employeeId +" "+ leaveStatus+"Leave Data Fetched sucefully ");
@@ -206,7 +208,7 @@ public class LeaveController {
 	@GetMapping("/monthlyLeave/{employeeId}/{leaveStatus}/{requeriedMonth}")
 	@CustomAnnotation(allowedRoles = {"1005","1006","1007"})
 
-	public ResponseEntity<Map<String , Object>> monthlyLeave(@PathVariable Long employeeId,@PathVariable String leaveStatus,@PathVariable LocalDate requeriedMonth) {
+	public ResponseEntity<Map<String , Object>> monthlyLeave(@PathVariable Long employeeId,@PathVariable String leaveStatus,@PathVariable String requeriedMonth) {
 		log.info("********inside takenLeaves LeaveController");
 		Map<String , Object> map=new LinkedHashMap<>();
 		map.put("message ","Employee :"+ employeeId +" "+ leaveStatus+"Leave Data Fetched sucefully ");
@@ -217,6 +219,20 @@ public class LeaveController {
 		map.put("ToalLeaves ", leaveService.takenLeaves(employeeId, leaveStatus, requeriedMonth));
 		map.put("Status : ", HttpStatus.OK);
 		map.put("Code : ", HttpStatus.OK.value());
+		return ResponseEntity.ok(map);
+	}
+	@GetMapping("/monthlyLeave/{leaveStatus}/{requeriedMonth}")
+	@CustomAnnotation(allowedRoles = {"1005","1006","1007"})
+	public ResponseEntity<Map<String , Object>> HrLevelMonthlyLeave(@PathVariable String leaveStatus, @PathVariable String requeriedMonth ){
+		log.info("**********inside HrLevelMOnthlyLeave LeaveController");
+		Map<String , Object> map=new LinkedHashMap<>();
+		map.put("message ", "employee "+leaveStatus +" Leave Data Fethed Succesfully");
+		map.put("Data ", requeriedMonth);
+		map.put("LeaveStatus ", leaveStatus);
+		List<EmployeeLeave> list=leaveService.HrLevelMonthyLeave(leaveStatus,requeriedMonth);
+		map.put("Result ", list);
+		map.put("status", HttpStatus.OK);
+		map.put("Code ", HttpStatus.OK.value());
 		return ResponseEntity.ok(map);
 	}
 	

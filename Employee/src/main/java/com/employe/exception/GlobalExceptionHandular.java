@@ -10,15 +10,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.employe.helper.ConstantValues;
 
+import lombok.extern.slf4j.Slf4j;
+
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandular  {
+	 @ExceptionHandler(HttpClientErrorException.class)
+	    public ResponseEntity<Object> handleHttpClientErrorException(HttpClientErrorException ex) {
+	        // Extract the error response from the exception
+	     log.info("inside ********* handleHttpClientErrorException");  
+	       Map<String , Object>  obj= ex.getResponseBodyAs(LinkedHashMap.class);
+	     return ResponseEntity.badRequest().body(obj);
 
+	    }
 	@ExceptionHandler(UnAuthorizedException.class)
 	public ResponseEntity<Map<String , Object>> Exception(UnAuthorizedException ex,WebRequest request) {
   	 	CustomException cu=new CustomException(HttpStatus.UNAUTHORIZED, LocalDateTime.now(), ex.getMessage(), request.getDescription(false), HttpStatus.UNAUTHORIZED.value());

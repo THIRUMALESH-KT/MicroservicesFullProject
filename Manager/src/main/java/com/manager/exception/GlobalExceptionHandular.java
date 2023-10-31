@@ -2,6 +2,7 @@ package com.manager.exception;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -53,5 +54,21 @@ public class GlobalExceptionHandular {
 		map1.put("status", HttpStatus.BAD_REQUEST);
 		map1.put("status code ",HttpStatus.BAD_REQUEST.value()	);
 		return new ResponseEntity<Map<String,Object>>(map1,HttpStatus.BAD_REQUEST);
+	}
+	@ExceptionHandler(EmployeeNotFoundException.class)
+	public ResponseEntity<Map<String, Object>> Excetprioncal(EmployeeNotFoundException ex,WebRequest request){
+		log.info(" *******inside managerexception class EmployeeNotFoundException");
+	 	CustomException cu=new CustomException(HttpStatus.BAD_REQUEST, LocalDateTime.now(), ex.getMessage(), request.getDescription(false), HttpStatus.BAD_REQUEST.value());
+
+    	Map<String, Object> map1=new LinkedHashMap<>();
+       	map1.put(ConstantValues.StatusMessage, cu.getMessage());
+    	map1.put(ConstantValues.Description, cu.getDescription());
+    	map1.put(ConstantValues.Timestamp, cu.getTimestamp());
+		map1.put(ConstantValues.statusCode, cu.getStatusCode());
+		map1.put(ConstantValues.Status, cu.getStatus());
+   		//map1.put(ConstantValues.Description, request.getDescription(false));
+   		return new ResponseEntity<Map<String, Object>>(map1,HttpStatus.BAD_REQUEST);
+       		
+   
 	}
 }

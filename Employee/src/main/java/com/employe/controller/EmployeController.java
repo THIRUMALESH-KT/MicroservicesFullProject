@@ -133,7 +133,7 @@ public class EmployeController {
 	
 	//Delete By Id
 	@DeleteMapping("/deleteById/{id}")
-	@CustomAnnotation(allowedRoles = {"1004","1006","1007"} )
+	@CustomAnnotation(allowedRoles = {"1005","1006","1007"} )
 
 	public  Object DeleteById(@PathVariable(required = false) Long id) throws Exception{
 		 log.info("**********inside DeleteById employeController");

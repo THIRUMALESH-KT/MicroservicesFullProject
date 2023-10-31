@@ -7,14 +7,20 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+
+import lombok.extern.slf4j.Slf4j;
+
 
 @RestControllerAdvice
-
+@Slf4j
 public class GlobalExceptionHandular {
 
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<Map<String, Object>> HandleException(Exception ex){
+	public ResponseEntity<Map<String, Object>> Exception(Exception ex){
+		log.info("********inside Exception");
 		Map<String , Object> map=new HashMap<>();
 		map.put(" Result  : ", " Fail ");
 		map.put(" Error message : ", ex.getMessage());
@@ -26,6 +32,8 @@ public class GlobalExceptionHandular {
 	}
 	@ExceptionHandler(RuntimeException.class)
 	public ResponseEntity<Map<String, Object>> RuntimeException(RuntimeException ex){
+		log.info("********inside RuntimeException");
+
 		Map<String , Object> map=new HashMap<>();
 		map.put(" Result  : ", " Fail ");
 		map.put(" Error message : ", ex.getMessage());
@@ -35,4 +43,5 @@ public class GlobalExceptionHandular {
 		
 		
 	}
+   
 }

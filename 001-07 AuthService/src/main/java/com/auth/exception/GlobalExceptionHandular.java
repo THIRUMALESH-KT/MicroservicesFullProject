@@ -13,14 +13,17 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.context.request.WebRequest;
 
 import com.auth.helper.ConstantValues;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -29,7 +32,14 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandular  {
-	
+	 @ExceptionHandler(HttpClientErrorException.class)
+	    public ResponseEntity<Object> handleHttpClientErrorException(HttpClientErrorException ex) {
+	        // Extract the error response from the exception
+	     log.info("inside ********* handleHttpClientErrorException");  
+	       Map<String , Object>  obj= ex.getResponseBodyAs(LinkedHashMap.class);
+	     return ResponseEntity.badRequest().body(obj);
+
+	    }
 
     @ExceptionHandler({MethodArgumentNotValidException.class,})
    public ResponseEntity<Map<String , Object>> MethodArgumentNotValidException(MethodArgumentNotValidException ex){
@@ -44,46 +54,29 @@ public class GlobalExceptionHandular  {
     }
 	
     @ExceptionHandler(value = {ExpiredJwtException.class})
-    public ResponseEntity<Map<String, Object>> handleExpiredJwtException(ExpiredJwtException ex, WebRequest request) {
+    @ResponseBody
+    public ResponseEntity<String> handleExpiredJwtException(ExpiredJwtException ex, WebRequest request) {
         log.info("********** inside ExpiredJwtException");
 
-        CustomException cu = new CustomException(HttpStatus.FORBIDDEN, LocalDateTime.now(), ex.getMessage(), request.getDescription(false), HttpStatus.FORBIDDEN.value());
 
-        Map<String, Object> map1 = new HashMap<>();
-        map1.put(ConstantValues.statusCode, cu.getStatusCode());
-        map1.put(ConstantValues.Status, cu.getStatus());
-        map1.put(ConstantValues.StatusMessage, cu.getMessage());
-        map1.put(ConstantValues.Timestamp, cu.getTimestamp());
-        map1.put(ConstantValues.Description, cu.getDescription());
-
-        // Create a new map with only the desired fields
-        Map<String, Object> responseMap = new HashMap<>();
-        responseMap.put(ConstantValues.statusCode, map1.get(ConstantValues.statusCode));
-        responseMap.put(ConstantValues.Status, map1.get(ConstantValues.Status));
-        responseMap.put(ConstantValues.StatusMessage, map1.get(ConstantValues.StatusMessage));
-        responseMap.put(ConstantValues.Timestamp, map1.get(ConstantValues.Timestamp));
-        responseMap.put(ConstantValues.Description, map1.get(ConstantValues.Description));
-
-        return new ResponseEntity<>(responseMap, HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 
-    @ExceptionHandler(value = {JwtException.class})
-    public ResponseEntity<Map<String , Object>> JwtException(JwtException ex, WebRequest request) {
-   	 log.info("********** inside JwtException");
+    @ExceptionHandler(value = {SignatureException.class})
+    public ResponseEntity<Object> JwtException(SignatureException ex, WebRequest request) {
+   	 log.info("********** inside SignatureException");
 
-    	CustomException cu=new CustomException(HttpStatus.FORBIDDEN, LocalDateTime.now(), ex.getMessage(), request.getDescription(false), HttpStatus.FORBIDDEN.value());
-
-    	Map<String, Object> map1=new HashMap<>();
-		map1.put(ConstantValues.statusCode, cu.getStatusCode());
-		map1.put(ConstantValues.Status, cu.getStatus());
-		map1.put(ConstantValues.StatusMessage, cu.getMessage());
-
-		map1.put(ConstantValues.Timestamp, cu.getTimestamp());
-		map1.put(ConstantValues.Description, cu.getDescription());
-		return new ResponseEntity<Map<String, Object>>(map1,HttpStatus.FORBIDDEN);    
+    	
+		return ResponseEntity.internalServerError().body(ex.getMessage()); 
 		}
+    @ExceptionHandler(value = {MalformedJwtException.class})
+    public ResponseEntity<Object> MalformedJwtException(MalformedJwtException ex, WebRequest request) {
+   	 log.info("********** inside MalformedJwtException");
 
+    	
+		return ResponseEntity.internalServerError().body(ex.getMessage()); 
+		}
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String , Object>> Exception(Exception ex){
    	 log.info("********** inside Exception");

@@ -64,6 +64,7 @@ public class AnnotationDeclarationMethod {
 	        if (Arrays.asList(customList).contains(expectedValue)) {
 	            return pjp.proceed();
 	        } else {
+	        	log.info("****** UnA uthorized");
 	            throw new UnAuthorizedException("You don't have authority");
 	        }
 	    } else {
