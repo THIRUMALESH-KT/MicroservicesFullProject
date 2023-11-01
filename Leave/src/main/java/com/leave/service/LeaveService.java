@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -24,8 +25,10 @@ import org.thymeleaf.context.Context;
 import com.google.common.net.HttpHeaders;
 import com.leave.entity.EmployeeLeave;
 import com.leave.entity.EmployeeLeaveSummary;
+import com.leave.entity.Tracking;
 import com.leave.exception.EmployeeNotFoundException;
 import com.leave.exception.LeaveIdNotFoundException;
+import com.leave.repository.EmployeeLeaveDataTracking;
 import com.leave.repository.LeaveRepository;
 import com.leave.userRequest.UserLeaveRequest;
 import com.leave.userRequest.employeeUserRequest;
@@ -49,6 +52,8 @@ public class LeaveService {
 	private JavaMailSender javaMailSender;
 	@Autowired
 	private TemplateEngine templateEngine;
+	@Autowired
+	private EmployeeLeaveDataTracking trackingRepo;
 
 	private static final String employeeBaseUrl = "http://localhost:8083/employee";
 	private static final String managerBaseUrl = "http://localhost:8084/manager";
@@ -57,6 +62,7 @@ public class LeaveService {
 	public ResponseEntity<?> ApplyLeave(UserLeaveRequest request, String tokenHeader, Long paramEmployeeId,
 			MultipartFile file) throws Exception {
 		log.info("*************inside applyLeave LeaveService");
+		
 		 boolean isHalfDayLeave=false;
 		if(request.getIsHalfDayLeave()!=null) {
 			isHalfDayLeave= request.getIsHalfDayLeave();// You need to define this in your UserLeaveRequest
@@ -78,6 +84,8 @@ public class LeaveService {
 	            }
 	        }
 	    }
+	    
+	    
 		EmployeeLeave leave = new EmployeeLeave(null, null, request.getLeaveCode(),request.getFromDate(),
 			request.getToDate(),	request.getReason(), null, null, "PENDING", null,false);
 		leave.setIsHalfDayLeave(isHalfDayLeave);
@@ -87,7 +95,7 @@ public class LeaveService {
 		
 		
 		
-		if (file != null)
+		if (file!=null)
 			leave.setLeaveFile(file);
 		String token = tokenHeader.substring(7);
 		String managerMail = null;
@@ -104,6 +112,7 @@ public class LeaveService {
 
 		if (paramEmployeeId != null) {
 			log.info("********* paramEmployee id : "+paramEmployeeId);
+			if(repo.hasLeaveOnDate(paramEmployeeId, fromDate,toDate)>0) throw new EmployeeNotFoundException("Leave application on this date already exists for the employee.");
 			employee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + paramEmployeeId, HttpMethod.GET, null,
 					employeeUserRequest.class);
 			log.info("employee : "+employee.toString());
@@ -126,14 +135,17 @@ public class LeaveService {
 		}
 		if (paramEmployeeId == null) {
 			log.info("**** self employee leave apply");
+			log.info("******** "+tokenId);
+			Long count=repo.hasLeaveOnDate(tokenId, fromDate ,toDate);
+			log.info("Count : "+count);
+			if(count>0) throw new EmployeeNotFoundException("Leave application on this date already exists for the employee.");
+
 			tokenEmployee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + tokenId, HttpMethod.GET, null,
 					employeeUserRequest.class);
 			log.info("********tokenEmployee "+tokenEmployee.toString());
-			if(tokenEmployee.getStatusCode()==HttpStatus.BAD_REQUEST)return ResponseEntity.badRequest().body(tokenEmployee.getBody());
 
 			employee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + tokenEmployee.getBody().getManagerId(),
 					HttpMethod.GET, null, employeeUserRequest.class);
-			if(employee.getStatusCode()==HttpStatus.BAD_REQUEST)return ResponseEntity.badRequest().body(employee.getBody());
 
 			leave.setManagerId(tokenEmployee.getBody().getManagerId());
 			leave.setEmployeeId(tokenEmployee.getBody().getEmployeeId());
@@ -164,7 +176,7 @@ public class LeaveService {
 		ccRecipients[1] = new InternetAddress(tokenEmployee.getBody().getEmail());
 		// Set the CC recipients in your email message
 		helper.setCc(ccRecipients);
-		if (file != null)
+		if (file!=null)
 			helper.addAttachment(file.getOriginalFilename(), new ByteArrayResource(file.getBytes()));
 		context.setVariable("leaveFromDate", request.getFromDate());
 		context.setVariable("leaveEndDate", request.getToDate());
@@ -186,15 +198,20 @@ public class LeaveService {
 		return ResponseEntity.ok(repo.save(leave));
 	}
 
-	public Object DeleteLeave(Long id) throws Exception {
+	public Object DeleteLeave(Long id,HttpServletRequest request) throws Exception {
 		log.info("*********inside deleteleave delete service");
+		Long loingEmployeeId =Long.valueOf(jwtService.extractEmployeeId(request.getHeader(HttpHeaders.AUTHORIZATION).substring(7)));
+		log.info("****after extract employee id : "+loingEmployeeId);
 		EmployeeLeave leave = repo.findById(id).orElseThrow(()-> new EmployeeNotFoundException("Leave id not Found"));
 			log.info("********* leave : "+leave);
 		if(leave==null)
 				throw new EmployeeNotFoundException("There is no applied leave on given id ");
-		if(leave.getLeaveStatus()!="PENDING") throw new EmployeeNotFoundException("Only Pending Leaves Can Be Deleted");
+		if(!leave.getLeaveStatus().equalsIgnoreCase("PENDING")) throw new EmployeeNotFoundException("You Can Cancle Only Pending Leaves");
+		
+		Tracking trackData=new Tracking(null, leave.getEmployeeId(), leave.toString(), loingEmployeeId, "Deleted");
+		trackingRepo.save(trackData);
 		repo.deleteById(id);
-		return "Leave Deleted sucedfully";
+		return leave;
 	}
 
 	public Object getAllEmployeesLeaveData(HttpServletRequest request) {
@@ -206,7 +223,8 @@ public class LeaveService {
 	}
 
 	
-	public EmployeeLeave ApproveLeave(Long id) throws Exception {
+	public EmployeeLeave ApproveLeave(Long id, HttpServletRequest request) throws Exception {
+		Long loingEmployeeId =Long.valueOf(jwtService.extractEmployeeId(request.getHeader(HttpHeaders.AUTHORIZATION).substring(7)));
 		log.info("*********inside approveLeave LeaveService");
 		EmployeeLeave leave = repo.findById(id)
 				.orElseThrow(() -> new EmployeeNotFoundException("There is no applied leave on given id"));
@@ -230,21 +248,24 @@ public class LeaveService {
 		context.setVariable("status", "Leave aprroved");
 		helper.setText(templateEngine.process("leaveApproved-template.html", context), true);
 		javaMailSender.send(message);
+		Tracking trackData=new Tracking(null, leave.getEmployeeId(), leave.toString(), loingEmployeeId, "LEAVE APPROVED");
+		trackingRepo.save(trackData);
 		return leave;
 
 	}
 
-	public EmployeeLeave RejectLeave(Long id) throws Exception {
+	public EmployeeLeave RejectLeave(Long id, HttpServletRequest request) throws Exception {
 		log.info("*********inside RejectLeave LeaveService");
+		Long loingEmployeeId =Long.valueOf(jwtService.extractEmployeeId(request.getHeader(HttpHeaders.AUTHORIZATION).substring(7)));
+
 		EmployeeLeave leave = repo.findById(id)
 				.orElseThrow(() -> new Exception("There is no applied leave on given id"));
 		leave.setLeaveStatus("REJECTED");
 		repo.save(leave);
 		log.info("******retrinve employee details ");
 		Long employeeId = leave.getEmployeeId();
-		ResponseEntity<employeeUserRequest> employee = restTemplate.exchange(employeeBaseUrl + "/getById/" + employeeId,
+		ResponseEntity<employeeUserRequest> employee = restTemplate.exchange(employeeBaseUrl + "/getOthers/" + employeeId,
 				HttpMethod.GET, null, employeeUserRequest.class);
-		if(employee.getStatusCode()==HttpStatus.BAD_REQUEST)throw new EmployeeNotFoundException(employee.getBody().toString());
 
 		log.info("**********Sending Approved Email");
 		MimeMessage message = javaMailSender.createMimeMessage();
@@ -258,6 +279,8 @@ public class LeaveService {
 		context.setVariable("status", "Leave REJECTED");
 		helper.setText(templateEngine.process("leaveApproved-template.html", context), false);
 		javaMailSender.send(message);
+		Tracking trackData=new Tracking(null, leave.getEmployeeId(), leave.toString(), loingEmployeeId, "LEAVE REJECTED");
+		trackingRepo.save(trackData);
 		return leave;
 	}
 
@@ -267,14 +290,22 @@ public class LeaveService {
 				Long.valueOf(jwtService.extractEmployeeId(request.getHeader(HttpHeaders.AUTHORIZATION).substring(7))));
 	}
 
+	
+	
 	public Object deleteMyLeave(Long id,HttpServletRequest request) throws Exception {
 		log.info("*********inside DeleteMyLeave LeaveService");
+
+		Long loingEmployeeId =Long.valueOf(jwtService.extractEmployeeId(request.getHeader(HttpHeaders.AUTHORIZATION).substring(7)));
+
 		EmployeeLeave employeeLeave = repo.findById(id).orElseThrow(() -> new Exception("Leave Id Not Found"));
 		if(employeeLeave.getLeaveStatus()!="PENDING") throw new EmployeeNotFoundException("Only Pending Leaves Can Be Deleted");
 
 		log.info("********after fetching employeeLeave ");
 		if(employeeLeave.getEmployeeId()!=Long.valueOf(jwtService.extractEmployeeId(request.getHeader(HttpHeaders.AUTHORIZATION).substring(7))))throw new Exception("Applied leave is not urs");
+		Tracking trackData=new Tracking(null, employeeLeave.getEmployeeId(), employeeLeave.toString(), loingEmployeeId, "Deleted");
+		trackingRepo.save(trackData);
 		repo.delete(employeeLeave);
+		
 		return employeeLeave;
 	}
 

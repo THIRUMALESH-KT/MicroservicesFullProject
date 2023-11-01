@@ -26,5 +26,6 @@ public class UserLeaveRequest {
 	@NotEmpty(message = "Reason Must Not Empty")
 	private String reason;
     private Boolean isHalfDayLeave; // Add this field
-
+    
+    
 }

@@ -5,10 +5,12 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import com.leave.entity.EmployeeLeave;
 import com.leave.entity.EmployeeLeaveSummary;
 
+@Repository
 public interface LeaveRepository extends JpaRepository<EmployeeLeave, Long> {
 
 //	@Query(value = "SELECT employee_id, SUM("
@@ -94,6 +96,26 @@ public interface LeaveRepository extends JpaRepository<EmployeeLeave, Long> {
 	        "WHERE to_date >= :startDate " +
 	        "AND from_date <= :endDate", nativeQuery = true)
 	List<EmployeeLeave> findAllEmployeesLeaveDataBasedOnLeaveStatusAndDate(LocalDate startDate, LocalDate endDate);
+
+//	@Query(value =
+//		    "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END " +
+//		    "FROM employee_leave e " +
+//		    "WHERE e.employee_id = :employeeId " +
+//		    "AND :fromDate BETWEEN from_date AND e.to_date "+
+//		    "OR :toDate BETWEEN from_date AND e.to_date ",
+//		    nativeQuery = true)
+	
+    @Query(value =
+            "SELECT COUNT(*) FROM employee_leave " +
+            "WHERE employee_id = :employeeId " +
+            "AND (" +
+            "    (:leavefromDate BETWEEN from_date AND to_date) " +
+            "    OR (:leavetoDate BETWEEN from_date AND to_date) " +
+            "    OR (from_date BETWEEN :leavefromDate AND :leavetoDate) " +
+            "    OR (to_date BETWEEN :leavefromDate AND :leavetoDate) " +
+            ")",
+            nativeQuery = true)
+    Long hasLeaveOnDate(Long employeeId, LocalDate leavefromDate, LocalDate leavetoDate);
 
 
 }
