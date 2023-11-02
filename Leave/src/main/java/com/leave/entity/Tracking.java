@@ -20,6 +20,7 @@ public class Tracking {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private Long employeeId;
+	private String modifiedTime;
     private String payLoad;
 	private Long modifiedBy;
 	private String deciption;

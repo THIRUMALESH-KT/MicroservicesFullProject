@@ -36,6 +36,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 //			System.out.println(credentials.getStatusCode()+"  : "+credentials.getBody());
 //		}
 //		
+		log.info("******** credentials : "+credentials.getBody());
 		return new CustomUserDetails(credentials.getBody());
 	}
 

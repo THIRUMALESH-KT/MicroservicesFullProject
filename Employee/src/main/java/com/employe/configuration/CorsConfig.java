@@ -12,7 +12,7 @@ public class CorsConfig {
 		 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 	        CorsConfiguration config = new CorsConfiguration();
 	        config.setAllowCredentials(true);
-	        config.addAllowedOrigin("https://localhost:8087/AUTH-SERVICE"); // Replace with the actual URL of your IdentityService
+	        config.addAllowedOrigin("https://localhost:8087/AUTH-SERVICE"); 
 	        config.addAllowedHeader("*");
 	        config.addAllowedMethod("*");
 	        source.registerCorsConfiguration("/**", config);
