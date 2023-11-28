@@ -30,12 +30,12 @@ public class SecurityConfig {
 	@Autowired
 	@Qualifier("handlerExceptionResolver")
 	private HandlerExceptionResolver exceptionResolver;
-	
+
 	@Bean
 	public JwtAuthenticationFilter authenticationFilter() {
 		return new JwtAuthenticationFilter(exceptionResolver);
 	}
-	
+
 	@Autowired
 	private AuthEntryPoint authEntryPoint;
 	@Autowired
@@ -44,28 +44,27 @@ public class SecurityConfig {
 	private accessdeniedhandlerimp accessDeniedException;
 	@Bean
 	public SecurityFilterChain chain(HttpSecurity http) throws Exception {
-		return http
-				.csrf(csrf->
-				csrf.disable())
-				
-				.authorizeHttpRequests(authorizweRequests->
-				authorizweRequests
-				.requestMatchers("/auth/welcome","/auth/login","/auth/hello","/employee/welcome","/auth/authenticate/**","/leave/welcome")
-				.permitAll()
-				.requestMatchers("/auth/addEmployee","/employee/getAllEmployees","employee/deleteById/**")
-				.hasRole("1007")
-				.requestMatchers("/employee/getAllEmployesUnderMe","/manager/getAllEmploye","/leave/applyLeave/**","/leave/allEmployeesLeaveData","/leave/approveLeave/**","/leave/rejectLeave/**","/leaveType/addLeaveType")
-				
-				.hasRole("1005")
-				.requestMatchers("/employee/getById","/employee/update/Personal/Details","/employee/password/reset/request","/employee/password/reset/confirm","/leave/applyLeave","/leave/delete/**","/leaveType/getAllLeaveTypes")
-				.hasRole("1001")
-				
-				.anyRequest().authenticated()
-				)
-				.sessionManagement(session->
-				session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.exceptionHandling(ex->
-				ex.authenticationEntryPoint(authEntryPoint))
+		return http.csrf(csrf -> csrf.disable())
+
+				.authorizeHttpRequests(authorizweRequests -> authorizweRequests
+						.requestMatchers("/auth/welcome", "/auth/login", "/auth/hello", "/employee/welcome",
+								"/auth/authenticate/**", "/leave/welcome")
+						.permitAll()
+						.requestMatchers("/auth/addEmployee", "/employee/getAllEmployees", "employee/deleteById/**")
+						.hasRole("1007")
+						.requestMatchers("/employee/getAllEmployesUnderMe", "/manager/getAllEmploye",
+								"/leave/applyLeave/**", "/leave/allEmployeesLeaveData", "/leave/approveLeave/**",
+								"/leave/rejectLeave/**", "/leaveType/addLeaveType")
+
+						.hasRole("1005")
+						.requestMatchers("/employee/getById", "/employee/update/Personal/Details",
+								"/employee/password/reset/request", "/employee/password/reset/confirm",
+								"/leave/applyLeave", "/leave/delete/**", "/leaveType/getAllLeaveTypes")
+						.hasRole("1001")
+
+						.anyRequest().authenticated())
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint))
 //				.exceptionHandling(ex->ex.accessDeniedHandler(accessDeniedException))
 //                sessionManagement(ses->ses.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 //				
@@ -73,9 +72,9 @@ public class SecurityConfig {
 				
 				.authenticationProvider(authProvider)
 
-				.addFilterBefore(authenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-				.build();
+				.addFilterBefore(authenticationFilter(), UsernamePasswordAuthenticationFilter.class).build();
 	}
+
 	@Bean
 	public RoleHierarchy roleHierarchy() {
 		RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
